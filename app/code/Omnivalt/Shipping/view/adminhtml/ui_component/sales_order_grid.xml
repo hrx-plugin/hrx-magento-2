@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="buttons" xsi:type="array">
+            <item name="call_omniva" xsi:type="array">
+                <item name="name" xsi:type="string">call_omniva</item>
+                <item name="label" xsi:type="string" translate="true">Call Omniva</item>
+                <item name="class" xsi:type="string">primary</item>
+                <item name="style" xsi:type="string">background-color:#b3aaaa;</item>
+                <item name="url" xsi:type="string">omnivalt/order/CallOmniva</item>
+            </item>
+        </item>
+    </argument>
+    <listingToolbar name="listing_top">
+        <massaction name="listing_massaction">
+            <action name="mass_labels">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">mass_labels</item>
+                        <item name="label" xsi:type="string" translate="true">Generate Omnivalt Labels</item>
+                        <item name="url" xsi:type="url" path="omnivalt/order/printMassLabels"/>
+                    </item>
+                </argument>
+            </action>
+            <action name="mass_manifest">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">mass_manifest</item>
+                        <item name="label" xsi:type="string" translate="true">Generate Omnivalt Manifest</item>
+                        <item name="url" xsi:type="url" path="omnivalt/order/printMassManifest"/>
+                    </item>
+                </argument>
+            </action>
+        </massaction>
+    </listingToolbar>
+</listing>
