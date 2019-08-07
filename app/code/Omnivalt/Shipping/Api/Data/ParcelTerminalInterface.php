@@ -21,4 +21,8 @@ interface ParcelTerminalInterface
      * @return string
      */
     public function getLocation();
+    
+    public function getX();
+    
+    public function getY();
 }

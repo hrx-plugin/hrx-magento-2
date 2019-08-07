@@ -6,6 +6,8 @@ define([
     'Magento_Checkout/js/model/shipping-service',
     'Omnivalt_Shipping/js/view/checkout/shipping/parcel-terminal-service',
     'mage/translate',
+    'Omnivalt_Shipping/js/leaflet',
+    'Omnivalt_Shipping/js/omniva',
 ], function ($, ko, Component, quote, shippingService, parcelTerminalService, t) {
     'use strict';
 
@@ -18,6 +20,8 @@ define([
             this.parcelTerminals = ko.observableArray();
             this.selectedParcelTerminal = ko.observable();
             this._super();
+            
+            
             
         },
         hideSelect: function () {
@@ -47,6 +51,25 @@ define([
                     }
                     cloned.appendTo($('#terminal-select-location td'));
                 }
+            }
+            
+            if($('#omnivaLtModal').length > 0 && $('.omniva-terminals-list').length == 0){
+                if ($('#onepage-checkout-shipping-method-additional-load select option').length>0){
+                    var omnivadata = [];
+                    omnivadata.omniva_plugin_url = require.toUrl('Omnivalt_Shipping/css/');
+                    omnivadata.omniva_current_country = quote.shippingAddress().countryId;
+                    omnivadata.text_select_terminal = $.mage.__('Select terminal');
+                    omnivadata.text_search_placeholder = $.mage.__('Enter postcode');
+                    omnivadata.not_found = $.mage.__('Place not found');
+                    omnivadata.text_enter_address = $.mage.__('Enter postcode / address');
+                    omnivadata.text_show_in_map = $.mage.__('Show in map');
+                    omnivadata.text_show_more = $.mage.__('Show more');
+                    omnivadata.postcode = quote.shippingAddress().postcode;
+                    $('#onepage-checkout-shipping-method-additional-load select').omniva({omnivadata:omnivadata});
+                }
+            }
+            if ($('#onepage-checkout-shipping-method-additional-load select').val() != last_selected_terminal){
+                $('#onepage-checkout-shipping-method-additional-load select').val(last_selected_terminal);
             }
         },
         initObservable: function () {
@@ -80,7 +103,6 @@ define([
                 quote.shippingAddress().extensionAttributes.omnivalt_parcel_terminal = terminal;
                 */
             });
-
 
             return this;
         },

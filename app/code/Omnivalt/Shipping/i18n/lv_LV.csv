@@ -49,3 +49,12 @@ Weight, Svars
 Receiver, Saņēmēja adrese
 "Courier full name, signature", "Kurjera pilns nosaukums, paraksts"
 "Sender full name, signature", "Nosūtītāja pilns vārds, uzvārds"
+"Select terminal","Izvēlieties paku termināli"
+"Enter postcode / address", "Ievadiet pasta indeksu/adresi"
+"Enter postcode", "Ievadiet pasta indeksu"
+"Place not found", "Vieta nav atrasta"
+"Show in map", "Apskatīt novietojumu"
+"Show more", "Parādīt vairāk"
+"Omniva parcel terminals", "Omniva pakomāti"
+"Parcel terminals addresses", "Pakomātu adreses"
+"Back to list", "Atpakaļ"

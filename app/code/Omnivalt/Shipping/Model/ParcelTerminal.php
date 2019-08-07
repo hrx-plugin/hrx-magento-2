@@ -30,4 +30,14 @@ class ParcelTerminal extends DataObject implements ParcelTerminalInterface
     {
         return (string)$this->_getData('location');
     }
+    
+    public function getX()
+    {
+        return (string)$this->_getData('x');
+    }
+    
+    public function getY()
+    {
+        return (string)$this->_getData('y');
+    }
 }

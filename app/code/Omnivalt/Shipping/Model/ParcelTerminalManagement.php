@@ -49,11 +49,28 @@ class ParcelTerminalManagement implements ParcelTerminalManagementInterface
           foreach($locationsXMLArray['LOCATIONS']['_value']['LOCATION'] as $loc_data ){
               if ($country != $loc_data['A0_NAME'])
                   continue;
+              $comment_language = 'LIT';
+              if ($country == "LV"){
+                  $comment_language = 'LAV';
+              }
+              if ($country == "EE"){
+                  $comment_language = 'EST';
+              }
               $parcelTerminal = $this->parcelTerminalFactory->create();
               $parcelTerminal->setZip($loc_data['ZIP']);
               $parcelTerminal->setName($loc_data['NAME']);
               $parcelTerminal->setLocation($loc_data['A2_NAME']);
-              $terminalArray = array('zip'=>$loc_data['ZIP'],'name'=>$loc_data['NAME'],'location'=>$loc_data['A2_NAME']);
+                $parcelTerminal->setX($loc_data['X_COORDINATE']);
+                $parcelTerminal->setY($loc_data['Y_COORDINATE']);
+              $terminalArray = array(
+                'zip'=>$loc_data['ZIP'],
+                'name'=>$loc_data['NAME'],
+                'location'=>$loc_data['A2_NAME'],
+                'x'=>$loc_data['X_COORDINATE'],
+                'y'=>$loc_data['Y_COORDINATE'],
+                'comment'=>$loc_data['COMMENT_'.$comment_language],
+                'city'=>$loc_data['A1_NAME'],
+                );
               if (!isset($result[$loc_data['A1_NAME']])){
                   $city_object = array('name' => $loc_data['A1_NAME'],'terminals'=> array());
                   $result[$loc_data['A1_NAME']] = $city_object;
@@ -68,6 +85,8 @@ class ParcelTerminalManagement implements ParcelTerminalManagementInterface
             $parcelTerminal->setZip($loc_data['ZIP']);
             $parcelTerminal->setName($loc_data['NAME']);
             $parcelTerminal->setLocation($loc_data['A2_NAME']);
+            $parcelTerminal->setX($loc_data['X_COORDINATE']);
+            $parcelTerminal->setY($loc_data['Y_COORDINATE']);
             $result[] = $parcelTerminal;
           }
         }

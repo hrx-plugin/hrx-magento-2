@@ -612,7 +612,11 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $locationsXMLArray = $this->XMLparser->load($this->_locationFile)->xmlToArray();
         $locations = array();
         foreach($locationsXMLArray['LOCATIONS']['_value']['LOCATION'] as $loc_data ){
-            $locations[$loc_data['ZIP']] = array('name' => $loc_data['NAME'], 'country' => $loc_data['A0_NAME']);
+            $locations[$loc_data['ZIP']] = array(
+                'name' => $loc_data['NAME'], 
+                'country' => $loc_data['A0_NAME'],
+                'x' => $loc_data['X_COORDINATE'],
+            );
         }
 
         $codes['terminal'] = $locations;
