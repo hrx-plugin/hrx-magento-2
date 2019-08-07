@@ -27,11 +27,11 @@ define([
         hideSelect: function () {
             var method = quote.shippingMethod();
             var selectedMethod = method != null ? method.carrier_code + '_' + method.method_code : null;
-            
+            console.log(selectedMethod);
             if (selectedMethod == 'omnivalt_PARCEL_TERMINAL') {
-                $('#onepage-checkout-shipping-method-additional-load .omnivalt-parcel-terminal-list-wrapper').first().show();
+                $('#terminal-select-location').first().show();
             } else {
-                $('#onepage-checkout-shipping-method-additional-load .omnivalt-parcel-terminal-list-wrapper').first().hide();
+                $('#terminal-select-location').first().hide();
             }
         },
         moveSelect: function () {
@@ -42,9 +42,13 @@ define([
                 }
                 
                 if ($('#checkout-shipping-method-load .parcel-terminal-list').length == 0){
-                    var terminal_list = $('#onepage-checkout-shipping-method-additional-load .parcel-terminal-list');
+                    var terminal_list = $('#onepage-checkout-shipping-method-additional-load .omnivalt-parcel-terminal-list-wrapper div');
                     var row = $.parseHTML('<tr><td colspan = "4" style = "border-top: none; padding-top: 0px"></td></tr>');
-                    var move_after = $('#s_method_omnivalt_PARCEL_TERMINAL').parents('tr'); 
+                    if ($('#s_method_omnivalt_PARCEL_TERMINAL').length > 0){
+                        var move_after = $('#s_method_omnivalt_PARCEL_TERMINAL').parents('tr'); 
+                    } else if ($('#label_method_PARCEL_TERMINAL_omnivalt').length > 0){
+                        var move_after = $('#label_method_PARCEL_TERMINAL_omnivalt').parents('tr'); 
+                    }
                     var cloned =  terminal_list.clone(true);
                     if ($('#terminal-select-location').length == 0){
                         $('<tr id = "terminal-select-location" ><td colspan = "4" style = "border-top: none; padding-top: 0px"></td></tr>').insertAfter(move_after);
@@ -54,7 +58,7 @@ define([
             }
             
             if($('#omnivaLtModal').length > 0 && $('.omniva-terminals-list').length == 0){
-                if ($('#onepage-checkout-shipping-method-additional-load select option').length>0){
+                if ($('#terminal-select-location select option').length>0){
                     var omnivadata = [];
                     omnivadata.omniva_plugin_url = require.toUrl('Omnivalt_Shipping/css/');
                     omnivadata.omniva_current_country = quote.shippingAddress().countryId;
@@ -65,11 +69,11 @@ define([
                     omnivadata.text_show_in_map = $.mage.__('Show in map');
                     omnivadata.text_show_more = $.mage.__('Show more');
                     omnivadata.postcode = quote.shippingAddress().postcode;
-                    $('#onepage-checkout-shipping-method-additional-load select').omniva({omnivadata:omnivadata});
+                    $('#terminal-select-location select').omniva({omnivadata:omnivadata});
                 }
             }
-            if ($('#onepage-checkout-shipping-method-additional-load select').val() != last_selected_terminal){
-                $('#onepage-checkout-shipping-method-additional-load select').val(last_selected_terminal);
+            if ($('#terminal-select-location select').val() != last_selected_terminal){
+                $('#terminal-select-location select').val(last_selected_terminal);
             }
         },
         initObservable: function () {

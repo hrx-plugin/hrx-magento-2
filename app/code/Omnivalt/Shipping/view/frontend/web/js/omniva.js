@@ -90,7 +90,7 @@ var last_selected_terminal = '';
             e.preventDefault();            
             showModal();
         });
-        $('body').on('click','#show-omniva-map',function(e){
+        $('body').on('click','.show-omniva-map',function(e){
             e.preventDefault();            
             showModal();
         });
@@ -445,7 +445,7 @@ var last_selected_terminal = '';
             });
           
           //show button
-          $('#show-omniva-map').show(); 
+          $('.show-omniva-map').show(); 
           
           $('#terminalsModal').on('click',function(){$('#omnivaLtModal').hide();});
           $('#omniva-search input').off('keyup focus').on('keyup focus',function(){
