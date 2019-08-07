@@ -27,7 +27,7 @@ define([
         hideSelect: function () {
             var method = quote.shippingMethod();
             var selectedMethod = method != null ? method.carrier_code + '_' + method.method_code : null;
-            console.log(selectedMethod);
+            
             if (selectedMethod == 'omnivalt_PARCEL_TERMINAL') {
                 $('#terminal-select-location').first().show();
             } else {
