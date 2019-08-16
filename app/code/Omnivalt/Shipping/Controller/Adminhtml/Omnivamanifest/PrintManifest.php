@@ -5,8 +5,11 @@ use \Magento\Framework\App\Action\Action;
 use \Magento\Framework\App\Action\Context;
 use \Magento\Framework\View\Result\PageFactory;
 use \Omnivalt\Shipping\Controller\Adminhtml\Order\PrintMassManifest;
+use Magento\Framework\App\CsrfAwareActionInterface; 
+use Magento\Framework\App\RequestInterface;  
+use Magento\Framework\App\Request\InvalidRequestException;
 
-class PrintManifest extends  \Magento\Framework\App\Action\Action
+class PrintManifest extends  \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
 
   protected $resultPageFactory;
@@ -26,6 +29,9 @@ class PrintManifest extends  \Magento\Framework\App\Action\Action
       $this->_orderCollectionFactory = $orderCollectionFactory;
        parent::__construct($context);
   }
+
+  public function createCsrfValidationException(RequestInterface $request):  ?InvalidRequestException { return null; } 
+  public function validateForCsrf(RequestInterface $request):  ?bool { return true; }
 
   public function execute()
   {
