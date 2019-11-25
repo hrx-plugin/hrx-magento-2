@@ -1,4 +1,4 @@
-var last_selected_terminal = '';
+var omniva_last_selected_terminal = '';
 (function ( $ ) {
     $.fn.omniva = function(options) {
         var settings = $.extend({
@@ -138,8 +138,7 @@ var last_selected_terminal = '';
         });
         
         select.on('change',function(){
-            last_selected_terminal = $(this).val();
-            
+            omniva_last_selected_terminal = $(this).val();         
         });
        
         searchByAddress();

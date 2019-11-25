@@ -72,8 +72,11 @@ define([
                     $('#terminal-select-location select').omniva({omnivadata:omnivadata});
                 }
             }
-            if ($('#terminal-select-location select').val() != last_selected_terminal){
-                $('#terminal-select-location select').val(last_selected_terminal);
+            if (typeof omniva_last_selected_terminal === 'undefined') {
+                var omniva_last_selected_terminal = '';
+            }
+            if ($('#terminal-select-location select').val() != omniva_last_selected_terminal){
+                $('#terminal-select-location select').val(omniva_last_selected_terminal);
             }
         },
         initObservable: function () {
