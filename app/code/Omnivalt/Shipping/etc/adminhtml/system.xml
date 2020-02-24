@@ -66,42 +66,84 @@
                     <label>Maximum Package Weight</label>
                     <validate>validate-number validate-zero-or-greater</validate>
                 </field>
+                <!-- Free shipping price toggler -->
+                <field id="free_shipping_enable" translate="label" type="select" sortOrder="179" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free Shipping Amount Threshold</label>
+                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
+                </field>
+                <!-- LT Courier -->
                 <field id="price" translate="label" type="text" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>LT Courier shipping price</label>
                     <validate>validate-number validate-zero-or-greater</validate>
                 </field>
-                <field id="price2" translate="label" type="text" sortOrder="180" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>LT Parcel terminal shipping price</label>
-                    <validate>validate-number validate-zero-or-greater</validate>
-                </field>
-                <field id="priceLV_C" translate="label" type="text" sortOrder="181" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>LV Courier shipping price</label>
-                    <validate>validate-number validate-zero-or-greater</validate>
-                </field>
-                <field id="priceLV_pt" translate="label" type="text" sortOrder="181" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>LV Parcel terminal shipping price</label>
-                    <validate>validate-number validate-zero-or-greater</validate>
-                </field>
-                <field id="priceEE_C" translate="label" type="text" sortOrder="182" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>EE Courier shipping price</label>
-                    <validate>validate-number validate-zero-or-greater</validate>
-                </field>
-                <field id="priceEE_pt" translate="label" type="text" sortOrder="182" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>EE Parcel terminal shipping price</label>
-                    <validate>validate-number validate-zero-or-greater</validate>
-                </field>
-                <field id="free_shipping_enable" translate="label" type="select" sortOrder="183" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Free Shipping Amount Threshold</label>
-                    <source_model>Magento\Config\Model\Config\Source\Enabledisable</source_model>
-                </field>
-                <field id="free_shipping_subtotal" translate="label" type="text" sortOrder="184" showInDefault="1" showInWebsite="1" showInStore="0">
-                    <label>Enable Free Shipping Threshold</label>
+                <field id="lt_courier_free_shipping_subtotal" translate="label" type="text" sortOrder="181" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free from</label>
                     <validate>validate-number validate-zero-or-greater</validate>
                     <depends>
                         <field id="free_shipping_enable">1</field>
                     </depends>
                 </field>
-                <field id="allowed_methods" translate="label" type="multiselect" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                <!-- LT Parcel -->
+                <field id="price2" translate="label" type="text" sortOrder="182" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>LT Parcel terminal shipping price</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="lt_parcel_terminal_free_shipping_subtotal" translate="label" type="text" sortOrder="183" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free from</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="free_shipping_enable">1</field>
+                    </depends>
+                </field>
+                <!-- LV Courier -->
+                <field id="priceLV_C" translate="label" type="text" sortOrder="184" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>LV Courier shipping price</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="lv_courier_free_shipping_subtotal" translate="label" type="text" sortOrder="185" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free from</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="free_shipping_enable">1</field>
+                    </depends>
+                </field>
+                <!-- LV Parcel -->
+                <field id="priceLV_pt" translate="label" type="text" sortOrder="186" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>LV Parcel terminal shipping price</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="lv_parcel_terminal_free_shipping_subtotal" translate="label" type="text" sortOrder="187" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free from</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="free_shipping_enable">1</field>
+                    </depends>
+                </field>
+                <!-- EE Courier -->
+                <field id="priceEE_C" translate="label" type="text" sortOrder="188" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>EE Courier shipping price</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="ee_courier_free_shipping_subtotal" translate="label" type="text" sortOrder="189" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free from</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="free_shipping_enable">1</field>
+                    </depends>
+                </field>
+                <!-- EE Parcel -->
+                <field id="priceEE_pt" translate="label" type="text" sortOrder="190" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>EE Parcel terminal shipping price</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="ee_parcel_terminal_free_shipping_subtotal" translate="label" type="text" sortOrder="191" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free from</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="free_shipping_enable">1</field>
+                    </depends>
+                </field>
+                <field id="allowed_methods" translate="label" type="multiselect" sortOrder="192" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Allowed Methods</label>
                     <source_model>Omnivalt\Shipping\Model\Source\Method</source_model>
                     <can_be_empty>1</can_be_empty>
