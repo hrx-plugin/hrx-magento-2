@@ -1,10 +1,10 @@
-# omniva-magento-2.3
+# omniva-magento-2.4
 
 ## Before installing
 
 Shop information must be configured.
 
-Depending on whats done with magento might need marketplace.magento.com user to get access tokens for composer. Instructions: https://devdocs.magento.com/guides/v2.3/install-gde/prereq/connect-auth.html
+Depending on whats done with magento might need marketplace.magento.com user to get access tokens for composer. Instructions: https://devdocs.magento.com/guides/v2.4/install-gde/prereq/connect-auth.html
 
 ## Installation - FTP **(Step 1)**
 

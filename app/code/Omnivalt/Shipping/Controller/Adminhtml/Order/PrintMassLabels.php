@@ -183,6 +183,8 @@ class PrintMassLabels extends \Magento\Sales\Controller\Adminhtml\Order\Abstract
         'order_item_id' => $shipmentItem->getOrderItemId()
       );
       $subtotal += $shipmentItem->getRowTotal();
+      $orderItem->setQtyShipped($orderItem->getQtyShipped() + $qtyShipped);
+      $orderItem->save();
       $shipment->addItem($shipmentItem);
     }
     //for sample, not used in label
