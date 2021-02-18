@@ -35,6 +35,10 @@ define([
             }
         },
         moveSelect: function () {
+            var omniva_last_selected_terminal = '';
+            if ($('#terminal-select-location select').length > 0){
+                omniva_last_selected_terminal = $('#terminal-select-location select').val();
+            }
             if ($('#onepage-checkout-shipping-method-additional-load .parcel-terminal-list').length > 0){
                 $('#checkout-shipping-method-load input:radio:not(.bound)').addClass('bound').bind('click', this.hideSelect());
                 if ($('#checkout-shipping-method-load .parcel-terminal-list').html() !=  $('#onepage-checkout-shipping-method-additional-load .parcel-terminal-list').html()){

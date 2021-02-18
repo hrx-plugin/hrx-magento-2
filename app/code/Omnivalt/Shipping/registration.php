@@ -7,5 +7,5 @@
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
     'Omnivalt_Shipping',
-    __DIR__
+    isset($file) ? dirname($file) : __DIR__
 );

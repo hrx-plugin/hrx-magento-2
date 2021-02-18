@@ -147,6 +147,8 @@ class PrintMassLabels extends \Magento\Sales\Controller\Adminhtml\Order\Abstract
         $this->messageManager->addSuccess('Success: Order ' . $order->getData('increment_id') . ' shipment generated');
       }
       $order->setIsInProcess(true);
+      $order->setState(\Magento\Sales\Model\Order::STATE_COMPLETE, true);
+        $order->setStatus(\Magento\Sales\Model\Order::STATE_COMPLETE);
       $order->addStatusHistoryComment('Automatically SHIPPED by Omnivalt mass action.', false);
       $order->save();
     } else {

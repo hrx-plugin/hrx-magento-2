@@ -39,6 +39,7 @@ define(
                 if (quote.shippingAddress().extensionAttributes == undefined) {
                     quote.shippingAddress().extensionAttributes = {};
                 }
+                
                 if (jQuery('select.parcel-terminal-list').length > 0){
                     quote.shippingAddress().extensionAttributes.omnivalt_parcel_terminal = jQuery('select.parcel-terminal-list').first().val();
                 }
