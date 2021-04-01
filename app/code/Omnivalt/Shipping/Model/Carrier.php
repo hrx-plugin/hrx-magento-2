@@ -652,6 +652,24 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
       }
       return '';
     }
+    
+    static public function _getOmnivaltTerminals($countryCode) {
+        $terminals = array();
+        $locationFile = __DIR__ . '/../etc' . '/location.xml';
+        //var_dump($locationFile); exit;
+        if (file_exists($locationFile)) {
+            //$locationsXMLArray = $this->XMLparser->load($this->_locationFile)->xmlToArray();
+            $xml = simplexml_load_file($locationFile) or die("Error: Cannot create object");
+            
+            foreach ($xml->LOCATION as $loc_data) {
+                if ($loc_data->A0_NAME == $countryCode){
+                    $terminals[] = $loc_data;
+                }
+            }
+        }
+        //var_dump($terminals); exit;
+        return $terminals;
+    }
 
     /**
      * Get tracking

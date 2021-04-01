@@ -2,6 +2,7 @@
 namespace Omnivalt\Shipping\Block\Adminhtml\Sales;
 
 use  Magento\Sales\Model\OrderRepository;
+use Omnivalt\Shipping\Model\Carrier;
 
 class Terminal extends \Magento\Backend\Block\Template {
    
@@ -43,13 +44,39 @@ class Terminal extends \Magento\Backend\Block\Template {
     
     }
     
+    public function getCurrentTerminal(){
+        //$orderRepository = new \Magento\Sales\Model\OrderRepository();
+        $order_id = $this->getRequest()->getParam('order_id');
+        $order = $this->getOrder();
+        //$order =  $orderRepository->get($order_id);
+        if (strtoupper($order->getData('shipping_method')) == strtoupper('Omnivalt_PARCEL_TERMINAL')) {
+            return $this->getTerminalId($order);
+        }
+        return false;
+    
+    }
+    
+    public function getTerminalId($order)
+    {
+        $shippingAddress = $order->getShippingAddress();
+        $terminal_id = $shippingAddress->getOmnivaltParcelTerminal();
+        return $terminal_id;
+    } 
+    
     public function getTerminal($order)
     {
         $shippingAddress = $order->getShippingAddress();
         $terminal_id = $shippingAddress->getOmnivaltParcelTerminal();
         $parcel_terminal = $this->Omnivalt_carrier->getTerminalAddress($terminal_id);
         return $parcel_terminal;
-   } 
+    } 
+   
+    public function getTerminals()
+    {
+        $rate = $this->getActiveMethodRate();
+        $parcel_terminals = Carrier::_getOmnivaltTerminals('LT');//$this->getAddress()->getCountryId());
+        return $parcel_terminals;
+    }
     
     /**
      * Retrieve order model instance

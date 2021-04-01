@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
-    <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
-    <body>          
+    <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">  
+    <body> 
+        <referenceContainer name="js">
+                <block class="Magento\Backend\Block\Template" template="Omnivalt_Shipping::order/view/js.phtml" name="omnivalt_shipping_order_view_js"/>
+        </referenceContainer>    
         <referenceBlock name="order_additional_info">
             <block class="Omnivalt\Shipping\Block\Adminhtml\Sales\Terminal" name="omnivalt_terminal" template="order/view/terminal.phtml" />
         </referenceBlock>
