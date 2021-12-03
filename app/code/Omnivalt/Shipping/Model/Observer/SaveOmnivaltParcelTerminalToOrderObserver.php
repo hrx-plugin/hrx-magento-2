@@ -28,8 +28,10 @@ class SaveOmnivaltParcelTerminalToOrderObserver implements ObserverInterface
         /** @var \Magento\Quote\Model\Quote $quote */
         $quote = $quoteRepository->get($order->getQuoteId());
         $quote_address = $quote->getShippingAddress();
-        $order_address = $order->getShippingAddress();
-        $order_address->setOmnivaltParcelTerminal( $quote_address->getOmnivaltParcelTerminal());
+        if ($quote_address){
+            $order_address = $order->getShippingAddress();
+            $order_address->setOmnivaltParcelTerminal( $quote_address->getOmnivaltParcelTerminal());
+        }
         return $this;
     }
 

@@ -6,9 +6,10 @@ define([
     'Magento_Checkout/js/model/shipping-service',
     'Omnivalt_Shipping/js/view/checkout/shipping/parcel-terminal-service',
     'mage/translate',
+    'Omnivalt_Shipping/js/omniva-data',
     'Omnivalt_Shipping/js/leaflet',
-    'Omnivalt_Shipping/js/omniva',
-], function ($, ko, Component, quote, shippingService, parcelTerminalService, t) {
+    'Omnivalt_Shipping/js/omniva'
+], function ($, ko, Component, quote, shippingService, parcelTerminalService, t, omnivaData) {
     'use strict';
 
     return Component.extend({
@@ -82,6 +83,9 @@ define([
             if ($('#terminal-select-location select').val() != omniva_last_selected_terminal){
                 $('#terminal-select-location select').val(omniva_last_selected_terminal);
             }
+            $('#checkout-step-shipping_method').on('change', '#terminal-select-location select', function () {
+                omnivaData.setPickupPoint($(this).val());
+            });
         },
         initObservable: function () {
             this._super();

@@ -92,7 +92,7 @@ class PrintMassLabels extends \Magento\Sales\Controller\Adminhtml\Order\Abstract
   /**
    * Generate ShipmentXML
    *
-   * Test Data if all correct, @return Venipak Lables
+   * Test Data if all correct, @return Omniva Lables
    */
   public function massAction(AbstractCollection $collection)
   {

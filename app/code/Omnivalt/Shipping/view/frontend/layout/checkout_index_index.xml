@@ -47,6 +47,22 @@
                                                 </item>
                                             </item>
                                         </item>
+                                        
+                                        <item name="billing-step" xsi:type="array">
+                                            <item name="children" xsi:type="array">
+                                                <item name="payment" xsi:type="array">
+                                                    <item name="children" xsi:type="array">
+                                                        <item name="additional-payment-validators" xsi:type="array">
+                                                            <item name="children" xsi:type="array">
+                                                                <item name="omnivalt-validator" xsi:type="array">
+                                                                    <item name="component" xsi:type="string">Omnivalt_Shipping/js/view/shipping-validator</item>
+                                                                </item>
+                                                            </item>
+                                                        </item>
+                                                    </item>
+                                                </item>
+                                            </item>
+                                        </item>
                                     </item>
                                 </item>
                             </item>
