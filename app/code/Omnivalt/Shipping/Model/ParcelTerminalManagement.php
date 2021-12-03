@@ -47,7 +47,7 @@ class ParcelTerminalManagement implements ParcelTerminalManagementInterface
         $locations = array();
         if ($group){
           foreach($locationsXMLArray['LOCATIONS']['_value']['LOCATION'] as $loc_data ){
-              if ($country != $loc_data['A0_NAME'])
+              if ($country != $loc_data['A0_NAME'] || $loc_data['TYPE'] == 1)
                   continue;
               $comment_language = 'LIT';
               if ($country == "LV"){
@@ -79,7 +79,7 @@ class ParcelTerminalManagement implements ParcelTerminalManagementInterface
           }
         } else {
           foreach($locationsXMLArray['LOCATIONS']['_value']['LOCATION'] as $loc_data ){
-            if ($country != $loc_data['A0_NAME'])
+            if ($country != $loc_data['A0_NAME'] || $loc_data['TYPE'] == 1)
                 continue;
             $parcelTerminal = $this->parcelTerminalFactory->create();
             $parcelTerminal->setZip($loc_data['ZIP']);
