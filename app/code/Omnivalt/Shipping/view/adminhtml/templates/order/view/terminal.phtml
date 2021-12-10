@@ -9,7 +9,7 @@ if ($pickup_point){
         echo $pickup_point .'</div>';
     } else {
     ?>
-    <?php $locs = $this->getTerminals(); ?>
+    <?php $locs = $this->getTerminals($this->getOrder()); ?>
     <?php $current_terminal = $this->getCurrentTerminal(); ?>
     <select name = "order[omnivalt_pickup_point]" id = "omnivalt_parcel_terminal_list" data-url = '<?= $this->getUrl('omnivalt/order/UpdateTerminal')?>' data-order = '<?= $this->getOrder()->getId(); ?>' style = "display: inline; height: 32px;">
                           <option value = "">Select parcel terminal</option>

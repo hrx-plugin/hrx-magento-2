@@ -70,11 +70,20 @@ class Terminal extends \Magento\Backend\Block\Template {
         $parcel_terminal = $this->Omnivalt_carrier->getTerminalAddress($terminal_id);
         return $parcel_terminal;
     } 
-   
-    public function getTerminals()
+    
+    public function getReceiverCountry($order)
     {
-        $rate = $this->getActiveMethodRate();
-        $parcel_terminals = Carrier::_getOmnivaltTerminals('LT');//$this->getAddress()->getCountryId());
+        if (!$order){
+            return 'LT';
+        }
+        $shippingAddress = $order->getShippingAddress();
+        $country = $shippingAddress->getCountryId();
+        return $country ?? 'LT';
+    } 
+   
+    public function getTerminals($order = false)
+    {
+        $parcel_terminals = Carrier::_getOmnivaltTerminals($this->getReceiverCountry($order));//$this->getAddress()->getCountryId());
         return $parcel_terminals;
     }
     
