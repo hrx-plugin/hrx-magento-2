@@ -7,16 +7,13 @@ define(
             'use strict';
             return {
                 validate: function () {
-                    var isValid = true; //Put your validation logic here
-
-
+                    var isValid = true;
 
                     let selectedShippingMethod = quote.shippingMethod();
 
-                    if (selectedShippingMethod.carrier_code === 'omnivalt') {
+                    if (selectedShippingMethod !== null && selectedShippingMethod.carrier_code === 'omnivalt') {
                         let terminal = $omnivaData.getPickupPoint();
-                        if (selectedShippingMethod.method_code === 'PARCEL_TERMINAL' &&
-                                !terminal) {
+                        if (selectedShippingMethod.method_code === 'PARCEL_TERMINAL' && !terminal) {
                             messageList.addErrorMessage({message: $t('Select Omniva parcel terminal')});
                             isValid = false;
                         }
