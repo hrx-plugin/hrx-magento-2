@@ -30,7 +30,9 @@ class SaveOmnivaltParcelTerminalToOrderObserver implements ObserverInterface
         $quote_address = $quote->getShippingAddress();
         if ($quote_address){
             $order_address = $order->getShippingAddress();
-            $order_address->setOmnivaltParcelTerminal( $quote_address->getOmnivaltParcelTerminal());
+            if ($order_address) {
+                $order_address->setOmnivaltParcelTerminal( $quote_address->getOmnivaltParcelTerminal());
+            }
         }
         return $this;
     }
