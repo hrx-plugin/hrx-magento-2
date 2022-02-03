@@ -15,6 +15,16 @@ use Magento\Shipping\Model\Carrier\AbstractCarrierOnline;
 use Magento\Shipping\Model\Rate\Result;
 use Magento\Shipping\Model\Tracking\Result as TrackingResult;
 
+use Mijora\Omniva\OmnivaException;
+use Mijora\Omniva\Shipment\Package\AdditionalService;
+use Mijora\Omniva\Shipment\Package\Address;
+use Mijora\Omniva\Shipment\Package\Contact;
+use Mijora\Omniva\Shipment\Package\Measures;
+use Mijora\Omniva\Shipment\Package\Cod;
+use Mijora\Omniva\Shipment\Package\Package;
+use Mijora\Omniva\Shipment\Shipment;
+use Mijora\Omniva\Shipment\ShipmentHeader;
+
 /**
  * Omnivalt shipping implementation
  *
@@ -159,6 +169,9 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
      * 
      */
     protected $_checkoutSession;
+    
+    
+    protected $variableFactory;
 
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -205,6 +218,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         \Magento\Framework\Xml\Parser $parser,
         \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
         \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Variable\Model\VariableFactory $variableFactory,
         array $data = []
     ) {
         $this->_checkoutSession = $checkoutSession;
@@ -212,6 +226,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $this->_storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
         $this->XMLparser = $parser;
+        $this->variableFactory = $variableFactory;
         parent::__construct(
             $scopeConfig,
             $rateErrorFactory,
@@ -230,6 +245,21 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             $stockRegistry,
             $data
         );
+        
+        //check terminals list
+        $var = $this->variableFactory->create();
+        $var->loadByCode('OMNIVA_REFRESH');
+        if (!$var->getId() || $var->getPlainValue() < time() - 3600 * 24) {
+            $this->refreshPickUpPoints();
+            if (!$var->getId()){
+                $var->setData(['code' => 'OMNIVA_REFRESH',
+                    'plain_value' => time()
+                ]);
+            } else {
+                $var->addData(['plain_value' => time()]);
+            }
+            $var->save();
+        }
 
         $this->_locationFile = $configReader->getModuleDir(Dir::MODULE_ETC_DIR, 'Omnivalt_Shipping') . '/location.xml';
         if (!$this->getConfigData('location_update') || ($this->getConfigData('location_update') + 3600 * 24) < time() || !file_exists($this->_locationFile)) {

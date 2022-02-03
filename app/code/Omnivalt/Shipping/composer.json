@@ -1,0 +1,12 @@
+{
+    "name": "omnivalt/shipping",
+    "description": "Omniva shipping module for Magento 2.*",
+    "type": "magento-module",
+    "authors": [
+        {
+            "name": "Mijora",
+            "email": "info@mijora.lt"
+        }
+    ],
+    "require": {}
+}

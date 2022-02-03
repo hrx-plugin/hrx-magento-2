@@ -9,8 +9,6 @@
     <default>
         <carriers>
             <omnivalt>
-                <account backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
-                <password backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
                 <production_webservices_url><![CDATA[https://edixml.post.ee]]></production_webservices_url>
                 <shipment_requesttype>0</shipment_requesttype>
                 <active>0</active>
