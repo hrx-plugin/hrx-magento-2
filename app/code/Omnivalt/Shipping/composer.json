@@ -8,5 +8,7 @@
             "email": "info@mijora.lt"
         }
     ],
-    "require": {}
+    "require": {
+         "mijora/omniva-api": "dev-master"
+    }
 }
