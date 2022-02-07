@@ -1,38 +1,29 @@
 <?php
 namespace Omnivalt\Shipping\Controller\Adminhtml\Omnivamanifest;
 
-use Magento\Framework\App\CsrfAwareActionInterface; 
-use Magento\Framework\App\RequestInterface;  
-use Magento\Framework\App\Request\InvalidRequestException;
+/*
+ * For magento below 2.3
+ */
 
-class PrintLabels extends  \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+class PrintManifestOV extends  \Magento\Framework\App\Action\Action
 {
 
   protected $resultPageFactory;
-  protected $massLabels;
+  protected $massManifest;
   protected $_orderCollectionFactory;
 
   public function __construct(
               \Magento\Backend\App\Action\Context $context,
               \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-              \Omnivalt\Shipping\Controller\Adminhtml\Order\ReprintMassLabels $massLabels,
+              \Omnivalt\Shipping\Controller\Adminhtml\Order\PrintMassManifest $massManifest,
               \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory
               
   ){
     
       $this->resultPageFactory = $resultPageFactory;
-      $this->massLabels = $massLabels;
+      $this->massManifest = $massManifest;
       $this->_orderCollectionFactory = $orderCollectionFactory;
        parent::__construct($context);
-  }
-
-  public function createCsrfValidationException(RequestInterface $request):  ?InvalidRequestException 
-  { 
-      return null; 
-  } 
-  public function validateForCsrf(RequestInterface $request):  ?bool 
-  { 
-      return true; 
   }
 
   public function execute()
@@ -40,6 +31,6 @@ class PrintLabels extends  \Magento\Framework\App\Action\Action implements CsrfA
       $order_ids = $this->getRequest()->getPost('order_ids');
       $collection = $this->_orderCollectionFactory->create()->addFieldToFilter('entity_id',array('in' => $order_ids))->load();
       
-      return $this->massLabels->massAction($collection);
+      return $this->massManifest->massAction($collection);
   }
 }

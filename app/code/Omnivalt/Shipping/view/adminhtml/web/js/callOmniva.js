@@ -9,10 +9,13 @@ require(['jquery'],function($){
         }
         $('#call_omniva').on('click',function(e){
             e.preventDefault();
-            console.log(omniva_url);
             if (confirm('Svarbu! Vėliausias galimas kurjerio iškvietimas yra iki 15val. Vėliau iškvietus kurjerį negarantuojame, jog siunta bus paimta.')) {
-                location.href = omniva_url;
+                if (omniva_url) {
+                    location.href = omniva_url;
+                }
+                return true;
             }
+            location.href = "";
             return false;
         });
     });

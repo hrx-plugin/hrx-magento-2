@@ -1,11 +1,11 @@
 <?php
 namespace Omnivalt\Shipping\Controller\Adminhtml\Omnivamanifest;
 
-use Magento\Framework\App\CsrfAwareActionInterface; 
-use Magento\Framework\App\RequestInterface;  
-use Magento\Framework\App\Request\InvalidRequestException;
+/*
+ * For magento below 2.3
+ */
 
-class PrintLabels extends  \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+class PrintLabelsOV extends  \Magento\Framework\App\Action\Action
 {
 
   protected $resultPageFactory;
@@ -24,15 +24,6 @@ class PrintLabels extends  \Magento\Framework\App\Action\Action implements CsrfA
       $this->massLabels = $massLabels;
       $this->_orderCollectionFactory = $orderCollectionFactory;
        parent::__construct($context);
-  }
-
-  public function createCsrfValidationException(RequestInterface $request):  ?InvalidRequestException 
-  { 
-      return null; 
-  } 
-  public function validateForCsrf(RequestInterface $request):  ?bool 
-  { 
-      return true; 
   }
 
   public function execute()

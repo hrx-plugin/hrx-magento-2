@@ -141,6 +141,11 @@
                         <field id="free_shipping_enable">1</field>
                     </depends>
                 </field>
+                <!-- Combine -->
+                <field id="combine_labels" translate="label" type="select" sortOrder="191" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Combine labels</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
                 <field id="allowed_methods" translate="label" type="multiselect" sortOrder="192" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Allowed Methods</label>
                     <source_model>Omnivalt\Shipping\Model\Source\Method</source_model>

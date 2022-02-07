@@ -5,7 +5,7 @@ use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\RequestInterface;  
 use Magento\Framework\App\Request\InvalidRequestException;
 
-class PrintLabels extends  \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+class GenerateLabels extends  \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
 
   protected $resultPageFactory;
@@ -15,7 +15,7 @@ class PrintLabels extends  \Magento\Framework\App\Action\Action implements CsrfA
   public function __construct(
               \Magento\Backend\App\Action\Context $context,
               \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-              \Omnivalt\Shipping\Controller\Adminhtml\Order\ReprintMassLabels $massLabels,
+              \Omnivalt\Shipping\Controller\Adminhtml\Order\PrintMassLabels $massLabels,
               \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory
               
   ){

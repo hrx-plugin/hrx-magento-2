@@ -1,43 +1,57 @@
 <?php
-$pickup_point = $this->getTerminalName(); 
+if (($this->blockIsVisible())) {
+    $pickup_point = $this->getTerminalName();
+    if ($pickup_point) {
+        $button = '<button id = "change-terminal" class = "action-secondary">' . __('Change') . '</button>';
+        if ($this->getMagentoVersion() >= 2.2) {
+            echo '<div style = "border:1px solid #ccc; padding: 10px;">';
+        } else {
+            echo '<div style = "border:1px solid #ccc; padding: 10px; margin-top: 20px;">';
+        }
+        echo '<b>' . __("Omniva parcel terminal") . '</b>: '; //.$pickup_point ;
+        if ($this->getOrder()->getStatus() == "closed" || $this->getOrder()->getStatus() == "complete") {
+            echo $pickup_point . '</div>';
+        } else {
+            ?>
+            <?php $locs = $this->getTerminals($this->getOrder()); ?>
+            <?php $current_terminal = $this->getCurrentTerminal(); ?>
+            <select name = "order[omnivalt_pickup_point]" id = "omnivalt_parcel_terminal_list" data-url = '<?= $this->getUrl('omnivalt/order/UpdateTerminal') ?>' data-order = '<?= $this->getOrder()->getId(); ?>' style = "display: inline; height: 32px;">
+                <option value = "">Select parcel terminal</option>
+                <?php
+                $grouped_options = array();
 
-if ($pickup_point){
-    $button = '<button id = "change-terminal" class = "action-secondary">'.__('Change').'</button>';
-    echo '<div style = "border:1px solid #ccc; padding: 10px;">';
-    echo '<b>'.__("Omniva parcel terminal").'</b>: ';//.$pickup_point ;
-    if ($this->getOrder()->getStatus() == "closed"){
-        echo $pickup_point .'</div>';
-    } else {
-    ?>
-    <?php $locs = $this->getTerminals($this->getOrder()); ?>
-    <?php $current_terminal = $this->getCurrentTerminal(); ?>
-    <select name = "order[omnivalt_pickup_point]" id = "omnivalt_parcel_terminal_list" data-url = '<?= $this->getUrl('omnivalt/order/UpdateTerminal')?>' data-order = '<?= $this->getOrder()->getId(); ?>' style = "display: inline; height: 32px;">
-                          <option value = "">Select parcel terminal</option>
-                          <?php
-                          
-                          $grouped_options = array();
-                          
-                          foreach ($locs as $loc){
-                            $key = $loc->ZIP;
-                            if (!isset($grouped_options[(string)$loc->A3_NAME]))
-                              $grouped_options[(string)$loc->A3_NAME] = array();
-                            $grouped_options[(string)$loc->A3_NAME][(string)$key] = $loc;
-                            
-                         }
-                         ksort($grouped_options);
-                          foreach ($grouped_options as $city=>$locs){
-                            echo '<optgroup label = "'.$city.'">';
-                            foreach ($locs as $key=>$loc){
-                              echo '<option value = "'.$key.'" '.($key == $current_terminal?'selected':'').'>'.$loc->NAME.', '. $loc->A2_NAME .', '. $loc->A0_NAME .'</option>';
-                            }
-                            echo '</optgroup>';
-                          }
-                          
-                          ?>
-                        </select>   
-    <?php
-    echo $button;
-    echo '</div>';
+                foreach ($locs as $loc) {
+                    $key = $loc['ZIP'];
+                    if (!isset($grouped_options[(string) $loc['A3_NAME']])) {
+                        $grouped_options[(string) $loc['A3_NAME']] = array();
+                    }
+                    $grouped_options[(string) $loc['A3_NAME']][(string) $key] = $loc;
+                }
+                ksort($grouped_options);
+                foreach ($grouped_options as $city => $locs) {
+                    echo '<optgroup label = "' . $city . '">';
+                    foreach ($locs as $key => $loc) {
+                        echo '<option value = "' . $key . '" ' . ($key == $current_terminal ? 'selected' : '') . '>' . $loc['NAME'] . ', ' . $loc['A2_NAME'] . ', ' . $loc['A0_NAME'] . '</option>';
+                    }
+                    echo '</optgroup>';
+                }
+                ?>
+            </select>   
+            <?php
+            echo $button;
+            echo '</div>';
+        }
+    }
+    $history = $this->getOrderHistory();
+    if ($history != '') {
+        ?>
+            <div class="admin__page-section-item-title" style = "margin-top: 20px; border-bottom: 1px solid #ccc;">
+                <span class="title"><?php echo __('Omniva label history'); ?></span>
+            </div>
+            <div class="admin__page-section-item-content">
+                <?php echo $history; ?>
+            </div>
+        <?php
     }
 }
 ?>

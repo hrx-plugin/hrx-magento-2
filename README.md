@@ -1,4 +1,4 @@
-# omniva-magento-2.4
+# Omniva module for Magento 2.1 - 2.4 versions
 
 ## Before installing
 
@@ -14,7 +14,7 @@ Copy `app` folder into magento root folder. Continue with terminal commands.
 
 
 ```
-composer require setasign/fpdi-tcpdf
+composer require mijora/omniva-api
 
 php bin/magento setup:upgrade
 
@@ -29,6 +29,6 @@ php bin/magento cache:flush
 
 ## Configuration **(Step 3)**
 
-Stores -> Configuration, select Sales -> Shipping Methods -> Omniva
+Stores -> Configuration, select Sales -> Shipping Methods / Delivery methods -> Omniva
 
 Fill in all the required information.

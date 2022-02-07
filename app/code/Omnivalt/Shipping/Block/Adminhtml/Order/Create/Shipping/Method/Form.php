@@ -11,8 +11,15 @@ use Omnivalt\Shipping\Model\Carrier;
  */
 class Form extends \Magento\Sales\Block\Adminhtml\Order\Create\Shipping\Method\Form
 {
-    protected $Omnivalt_carrier;
     
+    protected $omnivaltCarrier;
+    
+    public function __construct(
+        Carrier $omnivaltCarrier
+    ) {
+        $this->omnivaltCarrier = $omnivaltCarrier;
+        parent::contruct();
+    }
     
     public function getCurrentTerminal(){
         return $this->getAddress()->getOmnivaltParcelTerminal();
@@ -21,7 +28,7 @@ class Form extends \Magento\Sales\Block\Adminhtml\Order\Create\Shipping\Method\F
     public function getTerminals()
     {
         $rate = $this->getActiveMethodRate();
-        $parcel_terminals = Carrier::_getOmnivaltTerminals($this->getAddress()->getCountryId());
+        $parcel_terminals = $this->omnivaltCarrier->getTerminals($this->getAddress()->getCountryId());
         return $parcel_terminals;
     } 
     
