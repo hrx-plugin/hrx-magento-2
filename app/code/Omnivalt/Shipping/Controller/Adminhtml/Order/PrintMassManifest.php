@@ -44,7 +44,8 @@ class PrintMassManifest extends \Magento\Sales\Controller\Adminhtml\Order\Abstra
     public function isOmnivaltMethod($order) {
         $_omnivaltMethods = array(
             'omnivalt_PARCEL_TERMINAL',
-            'omnivalt_COURIER'
+            'omnivalt_COURIER',
+            'omnivalt_COURIER_PLUS'
         );
         $order_shipping_method = $order->getData('shipping_method');
         return in_array($order_shipping_method, $_omnivaltMethods);

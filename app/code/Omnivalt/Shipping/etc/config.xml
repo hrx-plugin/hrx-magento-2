@@ -13,7 +13,7 @@
                 <shipment_requesttype>0</shipment_requesttype>
                 <active>0</active>
                 <sallowspecific>0</sallowspecific>
-                <allowed_methods>COURIER,PARCEL_TERMINAL</allowed_methods>
+                <allowed_methods>COURIER,PARCEL_TERMINAL,COURIER_PLUS</allowed_methods>
                 <cutoff_cost />
                 <pickup>COURIER</pickup>
                 <handling>0</handling>

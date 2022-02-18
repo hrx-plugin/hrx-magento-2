@@ -41,6 +41,9 @@ class Manifest extends \Magento\Framework\View\Element\Template
         if ($order_shipping_method === 'omnivalt_courier') {
             return __('Courier');
         }
+        if ($order_shipping_method === 'omnivalt_courier_plus') {
+            return __('Courier Plus');
+        }
         if ($order_shipping_method === 'omnivalt_parcel_terminal') {
             return __('Parcel terminal') . ': '. $this->getTerminal($order);
         }

@@ -254,6 +254,8 @@ class ShippingMethod {
         $send_method = 'c';
         if (strtolower($send_method_name) == 'omnivalt_parcel_terminal') {
             $send_method = 'pt';
+        } else if (strtolower($send_method_name) == 'omnivalt_courier_plus') {
+            $send_method = 'cp';
         }
         $service = $this->getShippingService($omniva, $send_method, $order);
         //echo $service;

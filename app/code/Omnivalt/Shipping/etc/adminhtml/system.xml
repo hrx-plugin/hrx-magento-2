@@ -141,12 +141,24 @@
                         <field id="free_shipping_enable">1</field>
                     </depends>
                 </field>
+                <!-- EE Courier Plus -->
+                <field id="priceEE_CP" translate="label" type="text" sortOrder="192" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>EE Courier Plus shipping price</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="ee_courier_plus_free_shipping_subtotal" translate="label" type="text" sortOrder="193" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Free from</label>
+                    <validate>validate-number validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="free_shipping_enable">1</field>
+                    </depends>
+                </field>
                 <!-- Combine -->
-                <field id="combine_labels" translate="label" type="select" sortOrder="191" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="combine_labels" translate="label" type="select" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Combine labels</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="allowed_methods" translate="label" type="multiselect" sortOrder="192" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
+                <field id="allowed_methods" translate="label" type="multiselect" sortOrder="201" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
                     <label>Allowed Methods</label>
                     <source_model>Omnivalt\Shipping\Model\Source\Method</source_model>
                     <can_be_empty>1</can_be_empty>

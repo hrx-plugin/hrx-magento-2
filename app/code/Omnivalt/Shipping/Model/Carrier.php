@@ -47,19 +47,6 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
      */
     const CODE = 'omnivalt';
 
-    /**
-     * Purpose of rate request
-     *
-     * @var string
-     */
-    const RATE_REQUEST_GENERAL = 'general';
-
-    /**
-     * Purpose of rate request
-     *
-     * @var string
-     */
-    const RATE_REQUEST_SMARTPOST = 'SMART_POST';
 
     /**
      * Code of the carrier
@@ -298,6 +285,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $this->_updateFreeMethodQuote($request);
         $isFreeEnabled = $this->getConfigData('free_shipping_enable');
         $allowedMethods = explode(',', $this->getConfigData('allowed_methods'));
+        $company_country = $this->getConfigData('company_countrycode');
         foreach ($allowedMethods as $allowedMethod) {
             $method = $this->_rateMethodFactory->create();
 
@@ -342,6 +330,14 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
                         $freeFrom = $this->getConfigData('lt_parcel_terminal_free_shipping_subtotal');
                 }
             }
+            if ($allowedMethod == "COURIER_PLUS") {
+                if ($country_id == "EE" && ($company_country == 'EE' || $company_country == 'FI')) {
+                    $amount = $this->getConfigData('priceEE_CP');
+                    $freeFrom = $this->getConfigData('ee_courier_plus_free_shipping_subtotal');
+                } else {
+                    continue;
+                }
+            }
             if ($isFreeEnabled && $packageValue >= $freeFrom) {
                 $amount = 0;
             }
@@ -376,6 +372,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             'method' => [
                 'COURIER' => __('Courier'),
                 'PARCEL_TERMINAL' => __('Parcel terminal'),
+                'COURIER_PLUS' => __('Courier Plus'),
             ],
             'country' => [
                 'EE' => __('Estonia'),
@@ -652,6 +649,8 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             $send_method = 'c';
             if (strtolower($send_method_name) == 'parcel_terminal') {
                 $send_method = 'pt';
+            } else if (strtolower($send_method_name) == 'courier_plus') {
+                $send_method = 'cp';
             }
             
             $service = $this->shipping_helper->getShippingService($this, $send_method, $order);
