@@ -14,5 +14,13 @@
         <referenceBlock name="order_additional_info">
             <block class="Omnivalt\Shipping\Block\Adminhtml\Sales\Terminal" name="omnivalt_terminal" template="order/view/terminal.phtml" />
         </referenceBlock>
+        <referenceContainer name="left">
+            <referenceBlock name="sales_order_tabs">
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">omniva_services</argument>
+                    <argument name="block" xsi:type="string">Omnivalt\Shipping\Block\Adminhtml\Order\View\Tab\Services</argument>
+                </action>
+            </referenceBlock>
+        </referenceContainer>
     </body>
 </page>

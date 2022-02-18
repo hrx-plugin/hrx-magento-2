@@ -176,6 +176,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     protected $variableFactory;
     protected $omnivaPickupPoints;
     protected $labelhistoryFactory;
+    protected $shipping_helper;
 
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -225,6 +226,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             \Magento\Variable\Model\VariableFactory $variableFactory,
             PickupPoints $omnivaPickupPoints,
             LabelHistoryFactory $labelhistoryFactory,
+            \Omnivalt\Shipping\Model\Helper\ShippingMethod $shipping_helper,
             array $data = []
     ) {
         $this->_checkoutSession = $checkoutSession;
@@ -235,6 +237,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $this->variableFactory = $variableFactory;
         $this->omnivaPickupPoints = $omnivaPickupPoints;
         $this->labelhistoryFactory = $labelhistoryFactory;
+        $this->shipping_helper = $shipping_helper;
         parent::__construct(
                 $scopeConfig,
                 $rateErrorFactory,
@@ -643,25 +646,35 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             $payment_method = $order->getPayment()->getMethodInstance()->getCode();
             $is_cod = $payment_method == 'msp_cashondelivery';
 
-            $send_method = trim($request->getShippingMethod());
+            $send_method_name = trim($request->getShippingMethod());
             $pickup_method = $this->getConfigData('pickup');
-            $service = "";
-            switch ($pickup_method . ' ' . $send_method) {
-                case 'COURIER PARCEL_TERMINAL':
-                    $service = "PU";
-                    break;
-                case 'COURIER COURIER':
-                    $service = "QH";
-                    break;
-                case 'PARCEL_TERMINAL COURIER':
-                    $service = "PK";
-                    break;
-                case 'PARCEL_TERMINAL PARCEL_TERMINAL':
-                    $service = "PA";
-                    break;
-                default:
-                    $service = "";
-                    break;
+            
+            $send_method = 'c';
+            if (strtolower($send_method_name) == 'parcel_terminal') {
+                $send_method = 'pt';
+            }
+            
+            $service = $this->shipping_helper->getShippingService($this, $send_method, $order);
+            
+            //in case cannot get correct service
+            if ($service === false || is_array($service)) {
+                switch ($pickup_method . ' ' . $send_method_name) {
+                    case 'COURIER PARCEL_TERMINAL':
+                        $service = "PU";
+                        break;
+                    case 'COURIER COURIER':
+                        $service = "QH";
+                        break;
+                    case 'PARCEL_TERMINAL COURIER':
+                        $service = "PK";
+                        break;
+                    case 'PARCEL_TERMINAL PARCEL_TERMINAL':
+                        $service = "PA";
+                        break;
+                    default:
+                        $service = "";
+                        break;
+                }
             }
 
 
@@ -690,6 +703,14 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
                     $additionalServices[] = (new AdditionalService())->setServiceCode('BP');
                 }
             }
+            
+            $_orderServices = json_decode($order->getOmnivaltServices(), true);
+            if (isset($_orderServices['services']) && is_array($_orderServices['services'])) {
+                foreach ($_orderServices['services'] as $_service) {
+                    $additionalServices[] = (new AdditionalService())->setServiceCode($_service);
+                }
+            }
+            
             $package->setAdditionalServices($additionalServices);
 
             $measures = new Measures();
@@ -719,7 +740,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
                     ->setPostcode($request->getRecipientAddressPostalCode())
                     ->setDeliverypoint($request->getRecipientAddressCity())
                     ->setStreet($request->getRecipientAddressStreet1());
-            if ($send_method === 'PARCEL_TERMINAL') {
+            if ($send_method_name === 'PARCEL_TERMINAL') {
                 $address->setOffloadPostcode($order->getShippingAddress()->getOmnivaltParcelTerminal());
             }
 

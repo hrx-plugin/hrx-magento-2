@@ -17,17 +17,6 @@ class UpgradeSchema implements UpgradeSchemaInterface
         $installer = $setup;
         $installer->startSetup();
 
-        $installer->getConnection()->addColumn(
-                $installer->getTable('sales_order'),
-                'manifest_generation_date',
-                [
-                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
-                    'length' => 20,
-                    'nullable' => true,
-                    'comment' => 'Manifest generation date',
-                ]
-        );
-
         if (version_compare($context->getVersion(), '1.2.2', '<')) {
 
             if (!$installer->tableExists('omnivalt_label_history')) {
@@ -90,6 +79,20 @@ class UpgradeSchema implements UpgradeSchemaInterface
                         ]
                 );
             }
+        }
+        
+        if(version_compare($context->getVersion(), '1.2.4', '<')) {
+
+            $installer->getConnection()->addColumn(
+                $installer->getTable('sales_order'),
+                'omnivalt_services',
+                [
+                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                    'length' => 255,
+                    'nullable' => true,
+                    'comment' => 'Omniva additional services',
+                ]
+            );
         }
 
 
