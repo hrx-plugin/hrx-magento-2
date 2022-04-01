@@ -13,5 +13,13 @@ var config = {
                 'Omnivalt_Shipping/js/action/mixin/set-shipping-information-mixin': true
             }
         }
+    },
+    paths: {
+        leaflet: 'https://unpkg.com/leaflet@1.6.0/dist/leaflet'
+    },
+    shim: {
+        leaflet: {
+            exports: 'L'
+        }
     }
 };

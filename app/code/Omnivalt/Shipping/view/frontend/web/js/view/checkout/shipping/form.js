@@ -7,7 +7,7 @@ define([
     'Omnivalt_Shipping/js/view/checkout/shipping/parcel-terminal-service',
     'mage/translate',
     'Omnivalt_Shipping/js/omniva-data',
-    'Omnivalt_Shipping/js/leaflet',
+    'leaflet',
     'Omnivalt_Shipping/js/omniva'
 ], function ($, ko, Component, quote, shippingService, parcelTerminalService, t, omnivaData) {
     'use strict';
