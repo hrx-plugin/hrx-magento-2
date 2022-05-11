@@ -11,6 +11,7 @@ use Magento\Framework\Controller\ResultFactory;
 use Magento\Shipping\Model\Shipping\LabelGenerator;
 use Magento\Framework\App\Response\Http\FileFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Sales\Model\Order;
 
 /**
  * Class MassDelete
@@ -132,7 +133,7 @@ class PrintMassLabels extends \Magento\Sales\Controller\Adminhtml\Order\Abstract
         foreach ($order->getAllItems() as $item) {
             $shipmentItems[$item->getId()] = $item->getQtyToShip();
         }
-        // Prepear shipment and save ....
+        // Prepare shipment and save ....
         if ($order->getId() && !empty($shipmentItems)) {
             $shipment = false;
             if ($order->hasShipments()) {
@@ -146,12 +147,13 @@ class PrintMassLabels extends \Magento\Sales\Controller\Adminhtml\Order\Abstract
                 $this->messageManager->addWarning('Warning: Shipment label not generated for order ' . $order->getData('increment_id'));
             } else {
                 $this->messageManager->addSuccess('Success: Order ' . $order->getData('increment_id') . ' shipment generated');
+                $order->setIsInProcess(true);
+                $order->save();
+                $order->addStatusHistoryComment('Automatically SHIPPED by Omnivalt mass action.', false);
+                //set status to complete
+                $order->setStatus(Order::STATE_COMPLETE);
+                $order->save();
             }
-            $order->setIsInProcess(true);
-            $order->setState(\Magento\Sales\Model\Order::STATE_COMPLETE, true);
-            $order->setStatus(\Magento\Sales\Model\Order::STATE_COMPLETE);
-            $order->addStatusHistoryComment('Automatically SHIPPED by Omnivalt mass action.', false);
-            $order->save();
         } else {
             $this->messageManager->addWarning('Warning: Order ' . $order->getData('increment_id') . ' is empty or cannot be shipped or has been shipped already');
         }
