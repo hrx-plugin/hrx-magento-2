@@ -8,10 +8,10 @@ interface ParcelTerminalManagementInterface
     /**
      * Find parcel terminals for the customer
      *
-     * @param string $postcode
+     * @param string $group
      * @param string $city
      * @param string $country
-     * @return \Omnivalt\Shipping\Api\Data\ParcelTerminalInterface[]
+     * @return array
      */
     public function fetchParcelTerminals($group, $city, $country );
 }
