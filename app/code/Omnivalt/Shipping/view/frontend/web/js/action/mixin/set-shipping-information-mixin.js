@@ -35,7 +35,12 @@ define([
                     shippingAddress.extensionAttributes = {};
                 }
                 
+                if (shippingAddress.extension_attributes === undefined) {
+                    shippingAddress.extension_attributes = {};
+                }
+                
                 shippingAddress.extensionAttributes.omnivalt_parcel_terminal = terminal;
+                shippingAddress.extension_attributes.omnivalt_parcel_terminal = terminal;
 
                 return originalAction();
             });

@@ -322,17 +322,14 @@ class ShippingMethod {
                     $service_mapping = $this->shipping_sets[$set_name];
                     $service = $service_mapping[$method_pair] ?? false;
                     if (!isset($service_mapping[$method_pair])){
-                        printErrorsToLog(['method' => 'Mapping pair not found ' . $set_name . ' pair "' . $method_pair . '"'], $settings->shop_name, 'methodMapping');
                         $txt_sender = (isset($this->methods_map[$pickup_method])) ? $this->methods_map[$pickup_method] : $pickup_method;
                         $txt_receiver = (isset($this->methods_map[$send_method])) ? $this->methods_map[$send_method] : $send_method;
                         return array('error' => 'Send parcels from ' . $txt_sender . ' to ' . $txt_receiver . ' is not allowed');
                     }
                 } else {
-                    printErrorsToLog(['method' => 'Mapping set not found ' . $set_name . ' pair ' . $method_pair], $settings->shop_name, 'methodMapping');
                     return array('error' => 'Params for receiver is not found');
                 }
             } else {
-                printErrorsToLog(['method' => 'Shipping set params not found: Api country ' . $api_country . ' ,receiver ' . $receiver_country], $settings->shop_name, 'methodMapping');
                 return array('error' => 'Params for API country code "' . $api_country . '" is not found');
             }
         } catch(\Exception $e){
