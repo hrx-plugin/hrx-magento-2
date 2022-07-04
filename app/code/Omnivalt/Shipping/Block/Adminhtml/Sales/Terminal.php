@@ -50,6 +50,11 @@ class Terminal extends \Magento\Backend\Block\Template
         return false;
     }
 
+    public function isOmnivaTerminal() {
+        $order = $this->getOrder();
+        return strtoupper($order->getData('shipping_method')) == strtoupper('Omnivalt_PARCEL_TERMINAL');
+    }
+
     public function getCurrentTerminal() {
         //$orderRepository = new \Magento\Sales\Model\OrderRepository();
         $order_id = $this->getRequest()->getParam('order_id');

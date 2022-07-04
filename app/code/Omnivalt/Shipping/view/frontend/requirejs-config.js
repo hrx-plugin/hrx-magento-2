@@ -11,6 +11,9 @@ var config = {
         mixins: {
             'Magento_Checkout/js/action/set-shipping-information': {
                 'Omnivalt_Shipping/js/action/mixin/set-shipping-information-mixin': true
+            },
+            'Magento_Checkout/js/action/place-order': {
+                'Omnivalt_Shipping/js/action/mixin/place-order-mixin': true
             }
         }
     },

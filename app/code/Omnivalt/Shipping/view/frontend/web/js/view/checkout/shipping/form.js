@@ -61,6 +61,11 @@ define([
                     cloned.appendTo($('#terminal-select-location td'));
                 }
             }
+
+            
+            if (omnivaData.getPickupPoint()){
+                $('#terminal-select-location select').val(omnivaData.getPickupPoint());
+            }
             
             if($('#omnivaLtModal').length > 0 && $('.omniva-terminals-list').length == 0){
                 if ($('#terminal-select-location select option').length>0){
@@ -80,11 +85,10 @@ define([
             if (typeof omniva_last_selected_terminal === 'undefined') {
                 var omniva_last_selected_terminal = '';
             }
-            if ($('#terminal-select-location select').val() != omniva_last_selected_terminal){
-                $('#terminal-select-location select').val(omniva_last_selected_terminal);
-            }
-            $('#checkout-step-shipping_method').on('change', '#terminal-select-location select', function () {
+
+            $('#checkout-step-shipping_method').off('change', '#terminal-select-location select').on('change', '#terminal-select-location select', function () {
                 omnivaData.setPickupPoint($(this).val());
+                
             });
         },
         initObservable: function () {
