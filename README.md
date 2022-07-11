@@ -1,4 +1,4 @@
-# Omniva module for Magento 2.1 - 2.4 versions
+# HRX delivery module for Magento 2.1 - 2.4 versions
 
 ## Before installing
 
@@ -14,7 +14,7 @@ Copy `app` folder into magento root folder. Continue with terminal commands.
 
 
 ```
-composer require mijora/omniva-api
+composer require hrx/api-lib
 
 php bin/magento setup:upgrade
 
@@ -29,6 +29,6 @@ php bin/magento cache:flush
 
 ## Configuration **(Step 3)**
 
-Stores -> Configuration, select Sales -> Shipping Methods / Delivery methods -> Omniva
+Stores -> Configuration, select Sales -> Shipping Methods / Delivery methods -> HRX delivery
 
 Fill in all the required information.
