@@ -11,15 +11,6 @@
                     </item>
                 </argument>
             </action>
-            <action name="mass_manifest">
-                <argument name="data" xsi:type="array">
-                    <item name="config" xsi:type="array">
-                        <item name="type" xsi:type="string">mass_manifest</item>
-                        <item name="label" xsi:type="string" translate="true">Generate Hrx Manifest</item>
-                        <item name="url" xsi:type="url" path="hrx/order/printMassManifest"/>
-                    </item>
-                </argument>
-            </action>
         </massaction>
     </listingToolbar>
 </listing>

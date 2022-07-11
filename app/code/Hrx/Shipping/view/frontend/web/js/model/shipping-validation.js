@@ -13,7 +13,7 @@ define(
 
                     if (selectedShippingMethod !== null && selectedShippingMethod.carrier_code === 'hrx') {
                         let terminal = $omnivaData.getPickupPoint();
-                        if (selectedShippingMethod.method_code === 'PARCEL_TERMINAL' && !terminal) {
+                        if (selectedShippingMethod.method_code === 'parcel_terminal' && !terminal) {
                             messageList.addErrorMessage({message: $t('Select Hrx parcel terminal')});
                             isValid = false;
                         }

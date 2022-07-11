@@ -15,20 +15,10 @@ use Magento\Shipping\Model\Carrier\AbstractCarrierOnline;
 use Magento\Shipping\Model\Rate\Result;
 use Magento\Shipping\Model\Tracking\Result as TrackingResult;
 
-use Mijora\Hrx\HrxException;
-use Mijora\Hrx\Shipment\Package\AdditionalService;
-use Mijora\Hrx\Shipment\Package\Address;
-use Mijora\Hrx\Shipment\Package\Contact;
-use Mijora\Hrx\Shipment\Package\Measures;
-use Mijora\Hrx\Shipment\Package\Cod;
-use Mijora\Hrx\Shipment\Package\Package;
-use Mijora\Hrx\Shipment\Shipment;
-use Mijora\Hrx\Shipment\ShipmentHeader;
-use Mijora\Hrx\Locations\PickupPoints;
-use Mijora\Hrx\Shipment\Label;
-use Mijora\Hrx\Shipment\Tracking;
-use Mijora\Hrx\Shipment\CallCourier;
-use Hrx\Shipping\Model\LabelHistoryFactory;
+use Hrx\Shipping\Model\HrxOrderFactory;
+use Hrx\Shipping\Model\HrxTerminalFactory;
+use Hrx\Shipping\Model\HrxWarehouseFactory;
+use Hrx\Shipping\Model\Helper\HrxApi;
 
 /**
  * Hrx shipping implementation
@@ -56,22 +46,6 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     protected $_code = self::CODE;
 
     /**
-     * Types of rates, order is important
-     *
-     * @var array
-     */
-    protected $_ratesOrder = [
-        'RATED_ACCOUNT_PACKAGE',
-        'PAYOR_ACCOUNT_PACKAGE',
-        'RATED_ACCOUNT_SHIPMENT',
-        'PAYOR_ACCOUNT_SHIPMENT',
-        'RATED_LIST_PACKAGE',
-        'PAYOR_LIST_PACKAGE',
-        'RATED_LIST_SHIPMENT',
-        'PAYOR_LIST_SHIPMENT',
-    ];
-
-    /**
      * Rate request data
      *
      * @var RateRequest|null
@@ -84,41 +58,6 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
      * @var Result|TrackingResult
      */
     protected $_result = null;
-
-    /**
-     * Path to wsdl file of rate service
-     *
-     * @var string
-     */
-    protected $_rateServiceWsdl;
-
-    /**
-     * Path to wsdl file of ship service
-     *
-     * @var string
-     */
-    protected $_shipServiceWsdl = null;
-
-    /**
-     * Path to wsdl file of track service
-     *
-     * @var string
-     */
-    protected $_trackServiceWsdl = null;
-
-    /**
-     * Path to locations xml
-     *
-     * @var string
-     */
-    protected $_locationFile;
-
-    /**
-     * Container types that could be customized for Hrx carrier
-     *
-     * @var string[]
-     */
-    protected $_customizableContainerTypes = ['YOUR_PACKAGING'];
 
     /**
      * @var \Magento\Store\Model\StoreManagerInterface
@@ -134,25 +73,9 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
      * @inheritdoc
      */
     protected $_debugReplacePrivateDataKeys = [
-        'Account', 'Password'
+        'secret',
     ];
 
-    /**
-     * Version of tracking service
-     * @var int
-     */
-    private static $trackServiceVersion = 10;
-
-    /**
-     * List of TrackReply errors
-     * @var array
-     */
-    private static $trackingErrors = ['FAILURE', 'ERROR'];
-
-    /**
-     * @var \Magento\Framework\Xml\Parser
-     */
-    private $XMLparser;
     protected $configWriter;
 
     /**
@@ -161,9 +84,12 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
      */
     protected $_checkoutSession;
     protected $variableFactory;
-    protected $omnivaPickupPoints;
-    protected $labelhistoryFactory;
-    protected $shipping_helper;
+
+    protected $hrxWarehouseFactory;
+    protected $hrxTerminalFactory;
+    protected $hrxOrderFactory;
+    protected $hrxApi;
+    protected $_resource;
 
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -207,24 +133,26 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             \Magento\Store\Model\StoreManagerInterface $storeManager,
             \Magento\Framework\Module\Dir\Reader $configReader,
             \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
-            \Magento\Framework\Xml\Parser $parser,
             \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
             \Magento\Checkout\Model\Session $checkoutSession,
             \Magento\Variable\Model\VariableFactory $variableFactory,
-            PickupPoints $omnivaPickupPoints,
-            LabelHistoryFactory $labelhistoryFactory,
-            \Hrx\Shipping\Model\Helper\ShippingMethod $shipping_helper,
+            HrxTerminalFactory $hrxTerminalFactory,
+            HrxOrderFactory $hrxOrderFactory,
+            HrxWarehouseFactory $hrxWarehouseFactory,
+            HrxApi $hrxApi,
+            \Magento\Framework\App\ResourceConnection $resource,
             array $data = []
     ) {
         $this->_checkoutSession = $checkoutSession;
 
         $this->_storeManager = $storeManager;
         $this->_productCollectionFactory = $productCollectionFactory;
-        $this->XMLparser = $parser;
         $this->variableFactory = $variableFactory;
-        $this->omnivaPickupPoints = $omnivaPickupPoints;
-        $this->labelhistoryFactory = $labelhistoryFactory;
-        $this->shipping_helper = $shipping_helper;
+
+        $this->hrxTerminalFactory = $hrxTerminalFactory;
+        $this->hrxOrderFactory = $hrxOrderFactory;
+        $this->hrxWarehouseFactory = $hrxWarehouseFactory;
+        $this->hrxApi = $hrxApi;
         parent::__construct(
                 $scopeConfig,
                 $rateErrorFactory,
@@ -244,28 +172,8 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
                 $data
         );
 
-        //check terminals list
-        $this->_locationFile = $configReader->getModuleDir(Dir::MODULE_ETC_DIR, 'Hrx_Shipping') . '/locations.json';
-        try {
-            $var = $this->variableFactory->create();
-            $var->loadByCode('OMNIVA_REFRESH');
-            if (!$var->getId() || $var->getPlainValue() < time() - 3600 * 24) {
-                $omnivaLocs = $this->omnivaPickupPoints->getFilteredLocations();
-                if ($omnivaLocs) {
-                    $this->omnivaPickupPoints->saveLocationsToJSONFile($this->_locationFile, json_encode($omnivaLocs));
-                    if (!$var->getId()) {
-                        $var->setData(['code' => 'OMNIVA_REFRESH',
-                            'plain_value' => time()
-                        ]);
-                    } else {
-                        $var->addData(['plain_value' => time()]);
-                    }
-                    $var->save();
-                }
-            }
-        } catch (\Exception $e) {
-            
-        }
+        $this->hrxApi->init($this->getConfigData('secret'), $logger, $this->getConfigFlag('test_mode'));
+        $this->_resource = $resource;
     }
 
     /**
@@ -282,70 +190,27 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $result = $this->_rateFactory->create();
         //$packageValue = $request->getBaseCurrency()->convert($request->getPackageValueWithDiscount(), $request->getPackageCurrency());
         $packageValue = $request->getPackageValueWithDiscount();
-        $this->_updateFreeMethodQuote($request);
+
         $isFreeEnabled = $this->getConfigData('free_shipping_enable');
-        $allowedMethods = explode(',', $this->getConfigData('allowed_methods'));
-        $company_country = $this->getConfigData('company_countrycode');
-        foreach ($allowedMethods as $allowedMethod) {
-            $method = $this->_rateMethodFactory->create();
+        
+        $method = $this->_rateMethodFactory->create();
 
-            $method->setCarrier('hrx');
-            $method->setCarrierTitle($this->getConfigData('title'));
+        $method->setCarrier('hrx');
+        $method->setCarrierTitle($this->getConfigData('title'));
 
-            $method->setMethod($allowedMethod);
-            $method->setMethodTitle($this->getCode('method', $allowedMethod));
-            $amount = $this->getConfigData('price');
-
-            $country_id = $this->_checkoutSession->getQuote()
-                    ->getShippingAddress()
-                    ->getCountryId();
-
-            if ($allowedMethod == "COURIER") {
-                switch ($country_id) {
-                    case 'LV':
-                        $amount = $this->getConfigData('priceLV_C');
-                        $freeFrom = $this->getConfigData('lv_courier_free_shipping_subtotal');
-                        break;
-                    case 'EE':
-                        $amount = $this->getConfigData('priceEE_C');
-                        $freeFrom = $this->getConfigData('ee_courier_free_shipping_subtotal');
-                        break;
-                    default:
-                        $amount = $this->getConfigData('price');
-                        $freeFrom = $this->getConfigData('lt_courier_free_shipping_subtotal');
-                }
-            }
-            if ($allowedMethod == "PARCEL_TERMINAL") {
-                switch ($country_id) {
-                    case 'LV':
-                        $amount = $this->getConfigData('priceLV_pt');
-                        $freeFrom = $this->getConfigData('lv_parcel_terminal_free_shipping_subtotal');
-                        break;
-                    case 'EE':
-                        $amount = $this->getConfigData('priceEE_pt');
-                        $freeFrom = $this->getConfigData('ee_parcel_terminal_free_shipping_subtotal');
-                        break;
-                    default:
-                        $amount = $this->getConfigData('price2');
-                        $freeFrom = $this->getConfigData('lt_parcel_terminal_free_shipping_subtotal');
-                }
-            }
-            if ($allowedMethod == "COURIER_PLUS") {
-                if ($country_id == "EE" && ($company_country == 'EE' || $company_country == 'FI')) {
-                    $amount = $this->getConfigData('priceEE_CP');
-                    $freeFrom = $this->getConfigData('ee_courier_plus_free_shipping_subtotal');
-                } else {
-                    continue;
-                }
-            }
-            if ($isFreeEnabled && $packageValue >= $freeFrom) {
-                $amount = 0;
-            }
-            $method->setPrice($amount);
-            $method->setCost($amount);
-
-            $result->append($method);
+        $method->setMethod('parcel_terminal');
+        $method->setMethodTitle(__('Parcel terminal'));
+        $amount = $this->getConfigData('price');
+        $freeFrom = $this->getConfigData('free_shipping_subtotal');
+              
+        if ($isFreeEnabled && $packageValue >= $freeFrom) {
+            $amount = 0;
         }
+        $method->setPrice($amount);
+        $method->setCost($amount);
+
+        $result->append($method);
+        
         return $result;
     }
 
@@ -369,15 +234,13 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     public function getCode($type, $code = '') {
 
         $codes = [
-            'method' => [
-                'COURIER' => __('Courier'),
-                'PARCEL_TERMINAL' => __('Parcel terminal'),
-                'COURIER_PLUS' => __('Courier Plus'),
-            ],
             'country' => [
                 'EE' => __('Estonia'),
                 'LV' => __('Latvia'),
-                'LT' => __('Lithuania')
+                'LT' => __('Lithuania'),
+                'PL' => __('Poland'),
+                'FI' => __('Finland'),
+                'SE' => __('Sweden'),
             ],
             'tracking' => [
             ],
@@ -385,15 +248,8 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         ];
         if ($type == 'terminal') {
             $locations = [];
-            $locationsArray = $this->omnivaPickupPoints->loadLocationsFromJSONFile($this->_locationFile);
-            foreach ($locationsArray as $loc_data) {
-                $locations[$loc_data['ZIP']] = array(
-                    'name' => $loc_data['NAME'],
-                    'country' => $loc_data['A0_NAME'],
-                    'x' => $loc_data['X_COORDINATE'],
-                );
-            }
-            $codes['terminal'] = $locations;
+            
+            $codes['terminal'] = $this->getTerminals();
         }
 
 
@@ -414,8 +270,8 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         if (file_exists($this->_locationFile) && $terminal_id) {
             $locationsArray = $this->omnivaPickupPoints->loadLocationsFromJSONFile($this->_locationFile);
             foreach ($locationsArray as $loc_data) {
-                if ($loc_data['ZIP'] == $terminal_id) {
-                    $parcel_terminal_address = $loc_data['NAME'] . ', ' . $loc_data['A2_NAME'] . ', ' . $loc_data['A0_NAME'];
+                if ($loc_data['terminal_id'] == $terminal_id) {
+                    $parcel_terminal_address = $loc_data['address'] . ', ' . $loc_data['city'] . ', ' . $loc_data['country'];
                     return $parcel_terminal_address;
                 }
             }
@@ -423,16 +279,86 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         return '';
     }
 
-    public function getTerminals($countryCode = null) {
-        $terminals = array();
-        if (file_exists($this->_locationFile)) {
-            $locationsArray = $this->omnivaPickupPoints->loadLocationsFromJSONFile($this->_locationFile);
-            foreach ($locationsArray as $loc_data) {
-                if ($loc_data['A0_NAME'] == $countryCode || $countryCode == null) {
-                    $terminals[] = $loc_data;
-                }
+    private function updateParcelTerminals() {
+        $terminals = $this->hrxApi->getTerminals();
+        $connection = $this->_resource->getConnection();
+        $table = $connection->getTableName('hrx_terminals');
+        $query = "UPDATE `" . $table . "` SET `active`= '0'";
+        $connection->query($query);
+        foreach ($terminals as $terminal) {
+            $hrxTerminalFactory = $this->hrxTerminalFactory->create();
+            $terminal_ = $hrxTerminalFactory->load($terminal['id'], 'terminal_id');
+            $terminal_->setActive(1);
+            $terminal_->setTerminalId($terminal['id']);
+            $terminal_->setCountry($terminal['country']);
+            $terminal_->setCity($terminal['city']);
+            $terminal_->setPostcode($terminal['zip']);
+            $terminal_->setAddress($terminal['address']);
+            $terminal_->setLatitude($terminal['latitude']);
+            $terminal_->setLongitude($terminal['longitude']);
+            $terminal_->setMaxWidth($terminal['max_width_cm']);
+            $terminal_->setMaxLength($terminal['max_length_cm']);
+            $terminal_->setMaxHeight($terminal['max_height_cm']);
+            $terminal_->setMaxWeight($terminal['max_weight_kg']);
+            $terminal_->setMinWidth($terminal['min_width_cm']);
+            $terminal_->setMinLength($terminal['min_length_cm']);
+            $terminal_->setMinHeight($terminal['min_height_cm']);
+            $terminal_->setMinWeight($terminal['min_weight_kg']);
+            $terminal_->setPhonePrefix($terminal['recipient_phone_prefix']);
+            $terminal_->setPhoneRegex($terminal['recipient_phone_regexp']);
+            $terminal_->save();
+        }
+        
+        $query = "DELETE FROM `" . $table . "` WHERE `active`= '0'";
+        $connection->query($query);
+    }
+
+    public function updateWarehouses() {
+        $warehouses = $this->hrxApi->getWarehouses();
+        $connection = $this->_resource->getConnection();
+        $table = $connection->getTableName('hrx_warehouses');
+        $query = "UPDATE `" . $table . "` SET `active`= '0'";
+        $connection->query($query);
+        foreach ($warehouses as $warehouse) {
+            $hrxWarehouseFactory = $this->hrxWarehouseFactory->create();
+            $warehouse_ = $hrxWarehouseFactory->load($warehouse['id'], 'warehouse_id');
+            $warehouse_->setWarehouseId($warehouse['id']);
+            $warehouse_->setName($warehouse['name']);
+            $warehouse_->setActive(1);
+            $warehouse_->setCountry($warehouse['country']);
+            $warehouse_->setCity($warehouse['city']);
+            $warehouse_->setPostcode($warehouse['zip']);
+            $warehouse_->setAddress($warehouse['address']);
+            $warehouse_->save();
+        }
+        $query = "DELETE FROM `" . $table . "` WHERE `active`= '0'";
+        $connection->query($query);
+        /*
+        $default_warehouse_id = $this->getOption('warehouse_default', 0);
+        $test_warehouse = $this->warehouses()->where('id', $default_warehouse_id)->first();
+        if (!$test_warehouse) {
+            $first_warehouse = $this->warehouses()->first();
+            if ($first_warehouse) {
+                $this->setOption('warehouse_default', $first_warehouse->id);
             }
         }
+        */
+    }
+
+    public function getTerminals($countryCode = null) {
+        $terminals = array();
+        $hrxTerminalFactory = $this->hrxTerminalFactory->create();
+		$collection = $hrxTerminalFactory->getCollection();
+        //$this->updateWarehouses();
+        if (count($collection) == 0) {
+            $this->updateParcelTerminals();
+        }
+        if ($countryCode) {
+            $collection = $collection->addFieldToFilter('country', $countryCode);
+        }
+		foreach($collection as $item){
+			$terminals[] = $item->getData();
+		}
         //var_dump($terminals); exit;
         return $terminals;
     }
@@ -446,114 +372,15 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     public function getTracking($trackings) {
 
         $result = $this->_trackFactory->create();
-        if (!is_array($trackings)) {
-            $trackings = [$trackings];
-        }
-        $resultArr = [];
-        try {
-            $username = $this->getConfigData('account');
-            $password = $this->getConfigData('password');
-            
-            $tracking = new Tracking();
-            $tracking->setAuth($username, $password);
-
-            $results = $tracking->getTracking($trackings);
-
-            if (is_array($results)) {
-                foreach ($results as $barcode => $tracking_data) {
-                    $awbinfoData = [];
-                    $packageProgress = [];
-
-                    foreach ($tracking_data as $data) {
-                        $shipmentEventArray = [];
-                        $shipmentEventArray['activity'] = $data['state'];
-                        $shipmentEventArray['deliverydate'] = $data['date']->format('Y-m-d'); //date("Y-m-d", strtotime((string)$awbinfo->eventDate));
-                        $shipmentEventArray['deliverytime'] = $data['date']->format('H:i:s'); //date("H:i:s", strtotime((string)$awbinfo->eventDate));
-                        $shipmentEventArray['deliverylocation'] = $data['event'];
-                        $packageProgress[] = $shipmentEventArray;
-                    }
-                    $awbinfoData['progressdetail'] = $packageProgress;
-                    $resultArr[$barcode] = $awbinfoData;
-                }
-            }
-
-            if (!empty($resultArr)) {
-                foreach ($resultArr as $trackNum => $data) {
+        /*
                     $tracking = $this->_trackStatusFactory->create();
                     $tracking->setCarrier($this->_code);
                     $tracking->setCarrierTitle($this->getConfigData('title'));
                     $tracking->setTracking($trackNum);
                     $tracking->addData($data);
                     $result->append($tracking);
-                }
-            }
-        } catch (\Exception $e) {
-            
-        }
-        //$this->_getXMLTracking($trackings);
-
+        */
         return $result;
-    }
-
-    /**
-     * Get allowed shipping methods
-     *
-     * @return array
-     */
-    public function getAllowedMethods() {
-        $allowed = explode(',', $this->getConfigData('allowed_methods'));
-        $arr = [];
-        foreach ($allowed as $k) {
-            $arr[$k] = $this->getCode('method', $k);
-        }
-
-        return $arr;
-    }
-
-    public function callHrx() {
-        try {
-            $username = $this->getConfigData('account');
-            $password = $this->getConfigData('password');
-            
-            $pickStart = $this->getConfigData('pick_up_time_start')?$this->getConfigData('pick_up_time_start'):'8:00';
-            $pickFinish = $this->getConfigData('pick_up_time_finish')?$this->getConfigData('pick_up_time_finish'):'17:00';
-
-            $name = $this->getConfigData('cod_company');
-            $phone = $this->getConfigData('company_phone');
-            $street = $this->getConfigData('company_address');
-            $postcode = $this->getConfigData('company_postcode');
-            $city = $this->getConfigData('company_city');
-            $country = $this->getConfigData('company_countrycode');
-
-            $address = new Address();
-            $address
-                    ->setCountry($country)
-                    ->setPostcode($postcode)
-                    ->setDeliverypoint($city)
-                    ->setStreet($street);
-
-            // Sender contact data
-            $senderContact = new Contact();
-            $senderContact
-                    ->setAddress($address)
-                    ->setMobile($phone)
-                    ->setPersonName($name);
-
-            $call = new CallCourier();
-            $call->setAuth($username, $password);
-            $call->setSender($senderContact);
-            $call->setEarliestPickupTime($pickStart);
-            $call->setLatestPickupTime($pickFinish);
-            $call_result = $call->callCourier();
-            if ($call_result) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (\Exception $e) {
-            
-        }
-        return false;
     }
 
     protected function getReferenceNumber($order_number) {
@@ -658,16 +485,16 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             //in case cannot get correct service
             if ($service === false || is_array($service)) {
                 switch ($pickup_method . ' ' . $send_method_name) {
-                    case 'COURIER PARCEL_TERMINAL':
+                    case 'COURIER parcel_terminal':
                         $service = "PU";
                         break;
                     case 'COURIER COURIER':
                         $service = "QH";
                         break;
-                    case 'PARCEL_TERMINAL COURIER':
+                    case 'parcel_terminal COURIER':
                         $service = "PK";
                         break;
-                    case 'PARCEL_TERMINAL PARCEL_TERMINAL':
+                    case 'parcel_terminal parcel_terminal':
                         $service = "PA";
                         break;
                     default:
@@ -739,7 +566,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
                     ->setPostcode($request->getRecipientAddressPostalCode())
                     ->setDeliverypoint($request->getRecipientAddressCity())
                     ->setStreet($request->getRecipientAddressStreet1());
-            if ($send_method_name === 'PARCEL_TERMINAL') {
+            if ($send_method_name === 'parcel_terminal') {
                 $address->setOffloadPostcode($order->getShippingAddress()->getHrxParcelTerminal());
             }
 
@@ -809,17 +636,6 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     }
 
     /**
-     * Return delivery confirmation types of carrier
-     *
-     * @param \Magento\Framework\DataObject|null $params
-     * @return array
-     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
-     */
-    public function getDeliveryConfirmationTypes(\Magento\Framework\DataObject $params = null) {
-        return $this->getCode('delivery_confirmation_types');
-    }
-
-    /**
      * Recursive replace sensitive fields in debug data by the mask
      * @param array $data
      * @return string
@@ -835,13 +651,11 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         return $data;
     }
     
-    public function createLabelHistory($order, $barcode, $services = '') {
+    public function createHrxOrder($order) {
         try {
             $model = $this->labelhistoryFactory->create();
             $data = [
-                'order_id' => $order->getId(),
-                'label_barcode' => $barcode,
-                'services' => $services,
+                'shop_order_id' => $order->getId(),
             ];
             $model->setData($data);
             $model->save();
@@ -850,6 +664,11 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             
         }
         return false;
+    }
+
+    public function getAllowedMethods() {
+        $arr = ['parcel_terminal'];
+        return $arr;
     }
 
 }

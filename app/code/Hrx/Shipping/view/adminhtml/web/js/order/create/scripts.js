@@ -7,7 +7,7 @@ define([
 
     AdminOrder.prototype.setParcelTerminal  = function(pickup_point) {
               var data = {};
-              data['order[shipping_method]'] = 'hrx_PARCEL_TERMINAL';
+              data['order[shipping_method]'] = 'hrx_parcel_terminal';
               data['order[hrx_parcel_terminal]'] = pickup_point;
               this.loadArea(['shipping_method', 'totals', 'billing_method'], true, data);
             };

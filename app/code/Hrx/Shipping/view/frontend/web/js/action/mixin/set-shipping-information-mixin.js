@@ -23,7 +23,7 @@ define([
                 
                 let terminal = $omnivaData.getPickupPoint();
                 
-                if (selectedShippingMethod.method_code === 'PARCEL_TERMINAL' &&
+                if (selectedShippingMethod.method_code === 'parcel_terminal' &&
                     !terminal) {
                     globalMessageList.addErrorMessage(
                         {message: $t('Select Hrx parcel terminal!')});

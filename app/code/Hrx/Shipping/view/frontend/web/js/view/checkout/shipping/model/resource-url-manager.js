@@ -11,7 +11,7 @@ define(
             getUrlForParcelTerminalList: function(quote,group = 0, limit) {
                 var params = {group: group, city: quote.shippingAddress().city, country: quote.shippingAddress().countryId };
                 var urls = {
-                    'default': '/hrx/get-parcel-terminal-list/:group/:city/:country'
+                    'default': '/hrx/terminals/:country'
                 };
                 return this.getUrl(urls, params);
             },

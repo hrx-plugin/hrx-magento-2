@@ -25,8 +25,7 @@
     <type name="Magento\Config\Model\Config\Export\ExcludeList">
         <arguments>
             <argument name="configs" xsi:type="array">
-                <item name="carriers/hrx/account" xsi:type="string">1</item>
-                <item name="carriers/hrx/password" xsi:type="string">1</item>
+                <item name="carriers/hrx/secret" xsi:type="string">1</item>
             </argument>
         </arguments>
     </type>

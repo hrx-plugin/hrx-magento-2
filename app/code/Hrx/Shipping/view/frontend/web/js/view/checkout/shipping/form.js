@@ -29,7 +29,7 @@ define([
             var method = quote.shippingMethod();
             var selectedMethod = method != null ? method.carrier_code + '_' + method.method_code : null;
             
-            if (selectedMethod == 'hrx_PARCEL_TERMINAL') {
+            if (selectedMethod == 'hrx_parcel_terminal') {
                 $('#terminal-select-location').first().show();
             } else {
                 $('#terminal-select-location').first().hide();
@@ -49,10 +49,10 @@ define([
                 if ($('#checkout-shipping-method-load .parcel-terminal-list').length == 0){
                     var terminal_list = $('#onepage-checkout-shipping-method-additional-load .hrx-parcel-terminal-list-wrapper div');
                     var row = $.parseHTML('<tr><td colspan = "4" style = "border-top: none; padding-top: 0px"></td></tr>');
-                    if ($('#s_method_hrx_PARCEL_TERMINAL').length > 0){
-                        var move_after = $('#s_method_hrx_PARCEL_TERMINAL').parents('tr'); 
-                    } else if ($('#label_method_PARCEL_TERMINAL_hrx').length > 0){
-                        var move_after = $('#label_method_PARCEL_TERMINAL_hrx').parents('tr'); 
+                    if ($('#s_method_hrx_parcel_terminal').length > 0){
+                        var move_after = $('#s_method_hrx_parcel_terminal').parents('tr'); 
+                    } else if ($('#label_method_parcel_terminal_hrx').length > 0){
+                        var move_after = $('#label_method_parcel_terminal_hrx').parents('tr'); 
                     }
                     var cloned =  terminal_list.clone(true);
                     if ($('#terminal-select-location').length == 0){
@@ -108,7 +108,7 @@ define([
             quote.shippingMethod.subscribe(function(method) {
                 this.moveSelect();
                 var selectedMethod = method != null ? method.carrier_code + '_' + method.method_code : null;
-                if (selectedMethod == 'hrx_PARCEL_TERMINAL') {
+                if (selectedMethod == 'hrx_parcel_terminal') {
                     this.reloadParcelTerminals();
                 }
             }, this);

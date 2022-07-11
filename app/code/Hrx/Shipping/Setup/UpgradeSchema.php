@@ -16,7 +16,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
     public function upgrade(SchemaSetupInterface $setup, ModuleContextInterface $context) {
         $installer = $setup;
         $installer->startSetup();
-
+/*
         if (version_compare($context->getVersion(), '1.2.2', '<')) {
 
             if (!$installer->tableExists('hrx_label_history')) {
@@ -65,37 +65,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
                 $installer->getConnection()->createTable($table);
             }
         }
-        
-        if (version_compare($context->getVersion(), '1.2.3', '<')) {
-            if ($installer->getConnection()->tableColumnExists('hrx_label_history', 'services') === false) {
-                $installer->getConnection()->addColumn(
-                        $installer->getTable('hrx_label_history'),
-                        'services',
-                        [
-                            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
-                            'nullable' => true,
-                            'comment' => 'List of services',
-                            'after' => 'label_barcode'
-                        ]
-                );
-            }
-        }
-        
-        if(version_compare($context->getVersion(), '1.2.4', '<')) {
-
-            $installer->getConnection()->addColumn(
-                $installer->getTable('sales_order'),
-                'hrx_services',
-                [
-                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
-                    'length' => 255,
-                    'nullable' => true,
-                    'comment' => 'Hrx additional services',
-                ]
-            );
-        }
-
-
+*/
         $setup->endSetup();
     }
 

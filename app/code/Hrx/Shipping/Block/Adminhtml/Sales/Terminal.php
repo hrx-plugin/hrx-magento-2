@@ -44,7 +44,7 @@ class Terminal extends \Magento\Backend\Block\Template
 
     public function getTerminalName() {
         $order = $this->getOrder();
-        if (strtoupper($order->getData('shipping_method')) == strtoupper('Hrx_PARCEL_TERMINAL')) {
+        if (strtoupper($order->getData('shipping_method')) == strtoupper('Hrx_parcel_terminal')) {
             return $this->getTerminal($order);
         }
         return false;
@@ -52,7 +52,7 @@ class Terminal extends \Magento\Backend\Block\Template
 
     public function isHrxTerminal() {
         $order = $this->getOrder();
-        return strtoupper($order->getData('shipping_method')) == strtoupper('Hrx_PARCEL_TERMINAL');
+        return strtoupper($order->getData('shipping_method')) == strtoupper('Hrx_parcel_terminal');
     }
 
     public function getCurrentTerminal() {
@@ -60,7 +60,7 @@ class Terminal extends \Magento\Backend\Block\Template
         $order_id = $this->getRequest()->getParam('order_id');
         $order = $this->getOrder();
         //$order =  $orderRepository->get($order_id);
-        if (strtoupper($order->getData('shipping_method')) == strtoupper('Hrx_PARCEL_TERMINAL')) {
+        if (strtoupper($order->getData('shipping_method')) == strtoupper('Hrx_parcel_terminal')) {
             return $this->getTerminalId($order);
         }
         return false;

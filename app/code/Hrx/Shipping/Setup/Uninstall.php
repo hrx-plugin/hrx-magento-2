@@ -14,8 +14,9 @@ class Uninstall implements UninstallInterface
  
         $setup->getConnection()->dropColumn($setup->getTable('quote_address'), 'hrx_parcel_terminal');
         $setup->getConnection()->dropColumn($setup->getTable('sales_order_address'), 'hrx_parcel_terminal');
-        $setup->getConnection()->dropColumn($setup->getTable('sales_order'), 'manifest_generation_date');
- 
+        $connection->dropTable($setup->getTable('hrx_warehouses'));
+        $connection->dropTable($setup->getTable('hrx_terminals'));
+        $connection->dropTable($setup->getTable('hrx_orders'));
         $setup->endSetup();
     }
 }

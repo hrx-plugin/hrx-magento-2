@@ -23,7 +23,7 @@ class AddressPlugin
         $result = $proceed($method, $vars);
         
         if ($method == 'setShippingMethod'
-            && $vars[0] == Carrier::CODE.'_PARCEL_TERMINAL'
+            && $vars[0] == Carrier::CODE.'_parcel_terminal'
             && $subject->getExtensionAttributes()
             && $subject->getExtensionAttributes()->getHrxParcelTerminal()
         ) {
@@ -31,7 +31,7 @@ class AddressPlugin
         }
         elseif (
             $method == 'setShippingMethod'
-            && $vars[0] != Carrier::CODE.'_PARCEL_TERMINAL'
+            && $vars[0] != Carrier::CODE.'_parcel_terminal'
         ) {
             //reset office when changing shipping method
             $subject->setHrxParcelTerminal(0);

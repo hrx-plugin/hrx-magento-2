@@ -17,7 +17,7 @@ define([
                 
             let terminal = $omnivaData.getPickupPoint();
                 
-            if (selectedShippingMethod.method_code === 'PARCEL_TERMINAL' && !terminal) {
+            if (selectedShippingMethod.method_code === 'parcel_terminal' && !terminal) {
                 return originalAction(paymentData, redirectOnSuccess);
             }
                 

@@ -47,7 +47,7 @@ class ReprintMassLabels extends \Magento\Sales\Controller\Adminhtml\Order\Abstra
 
     public function isHrxMethod($order) {
         $_hrxMethods = array(
-            'hrx_PARCEL_TERMINAL',
+            'hrx_parcel_terminal',
             'hrx_COURIER'
         );
         $order_shipping_method = $order->getData('shipping_method');

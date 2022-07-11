@@ -2,7 +2,7 @@
 
 namespace Hrx\Shipping\Model\ResourceModel;
 
-class LabelHistory extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb {
+class HrxWarehouse extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb {
 
     public function __construct(
             \Magento\Framework\Model\ResourceModel\Db\Context $context
@@ -11,7 +11,7 @@ class LabelHistory extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb 
     }
 
     protected function _construct() {
-        $this->_init('hrx_label_history', 'labelhistory_id');
+        $this->_init('hrx_warehouses', 'id');
     }
 
     protected function _afterSave(\Magento\Framework\Model\AbstractModel $object) {

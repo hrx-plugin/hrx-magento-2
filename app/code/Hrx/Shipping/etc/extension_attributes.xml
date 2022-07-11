@@ -3,7 +3,4 @@
     <extension_attributes for="Magento\Quote\Api\Data\AddressInterface">
         <attribute code="hrx_parcel_terminal" type="string"/>
     </extension_attributes>
-    <extension_attributes for="Magento\Sales\Model\Order">
-        <attribute code="manifest_generation_date" type="string"/>
-    </extension_attributes>
 </config>

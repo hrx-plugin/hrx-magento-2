@@ -13,5 +13,5 @@ interface ParcelTerminalManagementInterface
      * @param string $country
      * @return array
      */
-    public function fetchParcelTerminals($group, $city, $country );
+    public function fetchParcelTerminals($country );
 }

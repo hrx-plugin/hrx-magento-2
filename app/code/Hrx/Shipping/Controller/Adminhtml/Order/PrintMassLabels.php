@@ -48,7 +48,7 @@ class PrintMassLabels extends \Magento\Sales\Controller\Adminhtml\Order\Abstract
 
     public function isHrxMethod($order) {
         $_hrxMethods = array(
-            'hrx_PARCEL_TERMINAL',
+            'hrx_parcel_terminal',
             'hrx_COURIER',
             'hrx_COURIER_PLUS'
         );
