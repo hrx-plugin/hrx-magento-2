@@ -267,14 +267,11 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     }
 
     public function getTerminalAddress($terminal_id) {
-        if (file_exists($this->_locationFile) && $terminal_id) {
-            $locationsArray = $this->omnivaPickupPoints->loadLocationsFromJSONFile($this->_locationFile);
-            foreach ($locationsArray as $loc_data) {
-                if ($loc_data['terminal_id'] == $terminal_id) {
-                    $parcel_terminal_address = $loc_data['address'] . ', ' . $loc_data['city'] . ', ' . $loc_data['country'];
-                    return $parcel_terminal_address;
-                }
-            }
+        $hrxTerminalFactory = $this->hrxTerminalFactory->create();
+        $terminal = $hrxTerminalFactory->load($terminal_id, 'terminal_id');
+        if ($terminal) {
+            $parcel_terminal_address = $terminal->getAddress() . ', ' . $terminal->getCity() . ', ' . $terminal->getCountry();
+            return $parcel_terminal_address;
         }
         return '';
     }
@@ -347,19 +344,19 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
     public function getTerminals($countryCode = null) {
         $terminals = array();
-        $hrxTerminalFactory = $this->hrxTerminalFactory->create();
-		$collection = $hrxTerminalFactory->getCollection();
         //$this->updateWarehouses();
+        if ($countryCode) {
+            $collection = $this->hrxTerminalFactory->create()->getCollection()->addFieldToFilter('country', array('eq' => $countryCode));
+        } else {
+            $collection = $this->hrxTerminalFactory->create()->getCollection();
+        }
+        
         if (count($collection) == 0) {
             $this->updateParcelTerminals();
-        }
-        if ($countryCode) {
-            $collection = $collection->addFieldToFilter('country', $countryCode);
         }
 		foreach($collection as $item){
 			$terminals[] = $item->getData();
 		}
-        //var_dump($terminals); exit;
         return $terminals;
     }
 

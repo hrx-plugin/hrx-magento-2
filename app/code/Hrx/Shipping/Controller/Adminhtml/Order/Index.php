@@ -1,5 +1,5 @@
 <?php
-namespace Hrx\Shipping\Controller\Adminhtml\Hrxmanifest;
+namespace Hrx\Shipping\Controller\Adminhtml\Order;
 
 
 class Index extends  \Magento\Backend\App\Action
@@ -19,7 +19,7 @@ class Index extends  \Magento\Backend\App\Action
   {
 
       $resultPage = $this->resultPageFactory->create();
-      $resultPage->getConfig()->getTitle()->prepend(__('Hrx manifest'));
+      $resultPage->getConfig()->getTitle()->prepend(__('HRX order'));
 
       return $resultPage;
   }

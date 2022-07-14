@@ -40,8 +40,8 @@ define(
                     quote.shippingAddress().extensionAttributes = {};
                 }
                 
-                if (jQuery('select.parcel-terminal-list').length > 0){
-                    quote.shippingAddress().extensionAttributes.hrx_parcel_terminal = jQuery('select.parcel-terminal-list').first().val();
+                if (jQuery('select.hrx-terminal-list').length > 0){
+                    quote.shippingAddress().extensionAttributes.hrx_parcel_terminal = jQuery('select.hrx-terminal-list').first().val();
                 }
                 
                 payload = {

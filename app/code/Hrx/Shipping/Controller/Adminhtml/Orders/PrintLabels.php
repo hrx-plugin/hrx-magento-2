@@ -1,11 +1,11 @@
 <?php
-namespace Hrx\Shipping\Controller\Adminhtml\Hrxmanifest;
+namespace Hrx\Shipping\Controller\Adminhtml\Orders;
 
-/*
- * For magento below 2.3
- */
+use Magento\Framework\App\CsrfAwareActionInterface; 
+use Magento\Framework\App\RequestInterface;  
+use Magento\Framework\App\Request\InvalidRequestException;
 
-class PrintLabelsOV extends  \Magento\Framework\App\Action\Action
+class PrintLabels extends  \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
 {
 
   protected $resultPageFactory;
@@ -24,6 +24,15 @@ class PrintLabelsOV extends  \Magento\Framework\App\Action\Action
       $this->massLabels = $massLabels;
       $this->_orderCollectionFactory = $orderCollectionFactory;
        parent::__construct($context);
+  }
+
+  public function createCsrfValidationException(RequestInterface $request):  ?InvalidRequestException 
+  { 
+      return null; 
+  } 
+  public function validateForCsrf(RequestInterface $request):  ?bool 
+  { 
+      return true; 
   }
 
   public function execute()

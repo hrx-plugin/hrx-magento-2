@@ -6,10 +6,10 @@ define([
     'Magento_Checkout/js/model/shipping-service',
     'Hrx_Shipping/js/view/checkout/shipping/parcel-terminal-service',
     'mage/translate',
-    'Hrx_Shipping/js/omniva-data',
+    'Hrx_Shipping/js/hrx-data',
     'leaflet',
-    'Hrx_Shipping/js/omniva'
-], function ($, ko, Component, quote, shippingService, parcelTerminalService, t, omnivaData) {
+    'Hrx_Shipping/js/hrx'
+], function ($, ko, Component, quote, shippingService, parcelTerminalService, t, hrxData) {
     'use strict';
 
     return Component.extend({
@@ -30,24 +30,24 @@ define([
             var selectedMethod = method != null ? method.carrier_code + '_' + method.method_code : null;
             
             if (selectedMethod == 'hrx_parcel_terminal') {
-                $('#terminal-select-location').first().show();
+                $('#hrx-select-terminal').first().show();
             } else {
-                $('#terminal-select-location').first().hide();
+                $('#hrx-select-terminal').first().hide();
             }
         },
         moveSelect: function () {
-            var omniva_last_selected_terminal = '';
-            if ($('#terminal-select-location select').length > 0){
-                omniva_last_selected_terminal = $('#terminal-select-location select').val();
+            var hrx_last_selected_terminal = '';
+            if ($('#hrx-select-terminal select').length > 0){
+                hrx_last_selected_terminal = $('#hrx-select-terminal select').val();
             }
-            if ($('#onepage-checkout-shipping-method-additional-load .parcel-terminal-list').length > 0){
+            if ($('#onepage-checkout-shipping-method-additional-load .hrx-terminal-list').length > 0){
                 $('#checkout-shipping-method-load input:radio:not(.bound)').addClass('bound').bind('click', this.hideSelect());
-                if ($('#checkout-shipping-method-load .parcel-terminal-list').html() !=  $('#onepage-checkout-shipping-method-additional-load .parcel-terminal-list').html()){
-                    $('#terminal-select-location').remove();
+                if ($('#checkout-shipping-method-load .hrx-terminal-list').html() !=  $('#onepage-checkout-shipping-method-additional-load .hrx-terminal-list').html()){
+                    $('#hrx-select-terminal').remove();
                 }
                 
-                if ($('#checkout-shipping-method-load .parcel-terminal-list').length == 0){
-                    var terminal_list = $('#onepage-checkout-shipping-method-additional-load .hrx-parcel-terminal-list-wrapper div');
+                if ($('#checkout-shipping-method-load .hrx-terminal-list').length == 0){
+                    var terminal_list = $('#onepage-checkout-shipping-method-additional-load .hrx-hrx-terminal-list-wrapper div');
                     var row = $.parseHTML('<tr><td colspan = "4" style = "border-top: none; padding-top: 0px"></td></tr>');
                     if ($('#s_method_hrx_parcel_terminal').length > 0){
                         var move_after = $('#s_method_hrx_parcel_terminal').parents('tr'); 
@@ -55,39 +55,39 @@ define([
                         var move_after = $('#label_method_parcel_terminal_hrx').parents('tr'); 
                     }
                     var cloned =  terminal_list.clone(true);
-                    if ($('#terminal-select-location').length == 0){
-                        $('<tr id = "terminal-select-location" ><td colspan = "4" style = "border-top: none; padding-top: 0px"></td></tr>').insertAfter(move_after);
+                    if ($('#hrx-select-terminal').length == 0){
+                        $('<tr id = "hrx-select-terminal" ><td colspan = "4" style = "border-top: none; padding-top: 0px"></td></tr>').insertAfter(move_after);
                     }
-                    cloned.appendTo($('#terminal-select-location td'));
+                    cloned.appendTo($('#hrx-select-terminal td'));
                 }
             }
 
             
-            if (omnivaData.getPickupPoint()){
-                $('#terminal-select-location select').val(omnivaData.getPickupPoint());
+            if (hrxData.getPickupPoint()){
+                $('#hrx-select-terminal select').val(hrxData.getPickupPoint());
             }
             
-            if($('#omnivaLtModal').length > 0 && $('.omniva-terminals-list').length == 0){
-                if ($('#terminal-select-location select option').length>0){
-                    var omnivadata = [];
-                    omnivadata.omniva_plugin_url = require.toUrl('Hrx_Shipping/css/');
-                    omnivadata.omniva_current_country = quote.shippingAddress().countryId;
-                    omnivadata.text_select_terminal = $.mage.__('Select terminal');
-                    omnivadata.text_search_placeholder = $.mage.__('Enter postcode');
-                    omnivadata.not_found = $.mage.__('Place not found');
-                    omnivadata.text_enter_address = $.mage.__('Enter postcode / address');
-                    omnivadata.text_show_in_map = $.mage.__('Show in map');
-                    omnivadata.text_show_more = $.mage.__('Show more');
-                    omnivadata.postcode = quote.shippingAddress().postcode;
-                    $('#terminal-select-location select').omniva({omnivadata:omnivadata});
+            if($('#hrxModal').length > 0 && $('.hrx-terminals-list').length == 0){
+                if ($('#hrx-select-terminal select option').length>0){
+                    var hrxdata = [];
+                    hrxdata.hrx_plugin_url = require.toUrl('Hrx_Shipping/css/');
+                    hrxdata.hrx_current_country = quote.shippingAddress().countryId;
+                    hrxdata.text_select_terminal = $.mage.__('Select terminal');
+                    hrxdata.text_search_placeholder = $.mage.__('Enter postcode');
+                    hrxdata.not_found = $.mage.__('Place not found');
+                    hrxdata.text_enter_address = $.mage.__('Enter postcode / address');
+                    hrxdata.text_show_in_map = $.mage.__('Show in map');
+                    hrxdata.text_show_more = $.mage.__('Show more');
+                    hrxdata.postcode = quote.shippingAddress().postcode;
+                    $('#hrx-select-terminal select').hrx({hrxdata:hrxdata});
                 }
             }
-            if (typeof omniva_last_selected_terminal === 'undefined') {
-                var omniva_last_selected_terminal = '';
+            if (typeof hrx_last_selected_terminal === 'undefined') {
+                var hrx_last_selected_terminal = '';
             }
 
-            $('#checkout-step-shipping_method').off('change', '#terminal-select-location select').on('change', '#terminal-select-location select', function () {
-                omnivaData.setPickupPoint($(this).val());
+            $('#checkout-step-shipping_method').off('change', '#hrx-select-terminal select').on('change', '#hrx-select-terminal select', function () {
+                hrxData.setPickupPoint($(this).val());
                 
             });
         },

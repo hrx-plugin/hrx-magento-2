@@ -10,7 +10,7 @@ define([
         };
     };
 
-    let cacheKey = 'omniva-data',
+    let cacheKey = 'hrx-data',
             saveData = function (data) {
                 storage.set(cacheKey, data);
             },

@@ -1,11 +1,11 @@
 <?php
-namespace Hrx\Shipping\Controller\Adminhtml\Hrxmanifest;
+namespace Hrx\Shipping\Controller\Adminhtml\Orders;
 
-use Magento\Framework\App\CsrfAwareActionInterface; 
-use Magento\Framework\App\RequestInterface;  
-use Magento\Framework\App\Request\InvalidRequestException;
+/*
+ * For magento below 2.3
+ */
 
-class GenerateLabels extends  \Magento\Framework\App\Action\Action implements CsrfAwareActionInterface
+class PrintLabelsOV extends  \Magento\Framework\App\Action\Action
 {
 
   protected $resultPageFactory;
@@ -15,7 +15,7 @@ class GenerateLabels extends  \Magento\Framework\App\Action\Action implements Cs
   public function __construct(
               \Magento\Backend\App\Action\Context $context,
               \Magento\Framework\View\Result\PageFactory $resultPageFactory,
-              \Hrx\Shipping\Controller\Adminhtml\Order\PrintMassLabels $massLabels,
+              \Hrx\Shipping\Controller\Adminhtml\Order\ReprintMassLabels $massLabels,
               \Magento\Sales\Model\ResourceModel\Order\CollectionFactory $orderCollectionFactory
               
   ){
@@ -24,15 +24,6 @@ class GenerateLabels extends  \Magento\Framework\App\Action\Action implements Cs
       $this->massLabels = $massLabels;
       $this->_orderCollectionFactory = $orderCollectionFactory;
        parent::__construct($context);
-  }
-
-  public function createCsrfValidationException(RequestInterface $request):  ?InvalidRequestException 
-  { 
-      return null; 
-  } 
-  public function validateForCsrf(RequestInterface $request):  ?bool 
-  { 
-      return true; 
   }
 
   public function execute()

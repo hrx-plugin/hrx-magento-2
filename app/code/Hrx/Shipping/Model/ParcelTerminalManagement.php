@@ -43,10 +43,10 @@ class ParcelTerminalManagement implements ParcelTerminalManagementInterface
                 $terminalArray = array(
                     'id' => $loc_data['terminal_id'],
                     'zip' => $loc_data['postcode'],
-                    'name' => $loc_data['address'] . ',' . $loc_data['city'] . ',' . $loc_data['country'],
+                    'name' => $loc_data['address'] . ', ' . $loc_data['city'] . ', ' . $loc_data['country'],
                     'location' => $loc_data['address'],
-                    'x' => $loc_data['latitude'],
-                    'y' => $loc_data['longitude'],
+                    'y' => $loc_data['latitude'],
+                    'x' => $loc_data['longitude'],
                     'comment' => '',
                     'city' => $loc_data['city'],
                 );

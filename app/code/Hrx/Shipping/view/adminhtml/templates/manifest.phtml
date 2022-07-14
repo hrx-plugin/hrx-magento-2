@@ -70,10 +70,10 @@ if (count($items)):
                     <tr >
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><input type = "checkbox"  class = "check-all"/></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Order #'); ?></span></th>
-                        <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Shipping method'); ?></span></th>
+                        <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Order status'); ?></span></th>
+                        <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Parcel terminal'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Tracking'); ?></span></th>
-                        <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Label history'); ?></span></th>
-                        <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Manifest generation date'); ?></span></th>
+                        <th class = "data-grid-th"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,10 +86,10 @@ if (count($items)):
                             ?>
                             <td><div class = "data-grid-cell-content"><input type = "checkbox" name = "items[]" class = "manifest-item" value = "<?php echo $ids; ?>"/></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $order->getIncrementId(); ?></div></td>
-                            <td><div class = "data-grid-cell-content"><?php echo $this->getShippingMethod($order); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $order->getIncrementId(); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $this->getTerminal($order); ?></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $this->getOrderTrackings($order); ?></div></td>
-                            <td><div class = "data-grid-cell-content"><?php echo $this->getOrderHistory($order); ?></div></td>
-                            <td><div class = "data-grid-cell-content"><?php echo $order->getManifestGenerationDate(); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $this->getOrderActions($order); ?></div></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -100,46 +100,24 @@ if (count($items)):
     <div>
         <br/>
         <div class="f-left">
-            <form id = "manifest-print-form" action = "<?php echo $this->getUrl('hrx/omnivamanifest/printmanifest' . ($old_version ? 'ov' : '')); ?>" method = "POST">
+            <form id = "labels-print-form" action = "<?php echo $this->getUrl('hrx/orders/printlabels' . ($old_version ? 'ov' : '')); ?>" method = "POST">
                 <input type = "hidden" name = "form_key" value = "<?php echo $this->getFormKey(); ?>"/>
             </form>
-            <form id = "labels-print-form" action = "<?php echo $this->getUrl('hrx/omnivamanifest/printlabels' . ($old_version ? 'ov' : '')); ?>" method = "POST">
+            <form id = "labels-generate-form" action = "<?php echo $this->getUrl('hrx/orders/generatelabels' . ($old_version ? 'ov' : '')); ?>" method = "POST">
                 <input type = "hidden" name = "form_key" value = "<?php echo $this->getFormKey(); ?>"/>
-            </form>
-            <form id = "labels-generate-form" action = "<?php echo $this->getUrl('hrx/omnivamanifest/generatelabels' . ($old_version ? 'ov' : '')); ?>" method = "POST">
-                <input type = "hidden" name = "form_key" value = "<?php echo $this->getFormKey(); ?>"/>
-            </form>
-            <button id="submit_manifest_items" title="<?php echo __('Print manifest'); ?>" type="button" class="scalable save">
-                <span><span><span><?php echo __('Print manifest'); ?></span></span></span>
-            </button>      
-            <button id="print_manifest_labels" title="<?php echo __('Print labels'); ?>" type="button" class="scalable save">
+            </form>  
+            <button id="hrx_print_labels" title="<?php echo __('Print labels'); ?>" type="button" class="scalable save">
                 <span><span><span><?php echo __('Print labels'); ?></span></span></span>
             </button>    
-            <button id="submit_manifest_labels" title="<?php echo __('Generate labels'); ?>" type="button" class="scalable save">
-                <span><span><span><?php echo __('Generate labels'); ?></span></span></span>
-            </button>     
+            <button id="hrx_print_return_labels" title="<?php echo __('Print return labels'); ?>" type="button" class="scalable save">
+                <span><span><span><?php echo __('Print return labels'); ?></span></span></span>
+            </button>    
         </div>
         <div class="f-clear"></div>
     </div>
     <script>
         require(['jquery'], function ($) {
             $('document').ready(function () {
-                $('#submit_manifest_items').on('click', function () {
-                    var ids = "";
-                    $('.manifest-item:checked').each(function () {
-                        ids += $(this).val() + ";";
-                        var id = $(this).val();
-                        $('#manifest-print-form').append('<input type="hidden" name="order_ids[]" value = "' + id + '" />');
-                    });
-                    $('#item_ids').val(ids);
-                    if (ids == "") {
-                        alert('<?php echo __('Select orders'); ?>');
-                    } else {
-                        $('#manifest-print-form').submit();
-                    }
-                    //console.log($('#item_ids').val());
-
-                });
                 
                 $('#print_manifest_labels').on('click', function () {
                     var ids = "";
@@ -157,7 +135,7 @@ if (count($items)):
 
                 });
 
-                $('#submit_manifest_labels').on('click', function () {
+                $('#hrx_print_labels').on('click', function () {
                     var ids = "";
                     $('.manifest-item:checked').each(function () {
                         ids += $(this).val() + ";";

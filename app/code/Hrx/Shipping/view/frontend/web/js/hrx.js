@@ -1,83 +1,57 @@
-var omniva_last_selected_terminal = '';
+var hrx_last_selected_terminal = '';
 (function ( $ ) {
-    $.fn.omniva = function(options) {
+    $.fn.hrx = function(options) {
         var settings = $.extend({
             maxShow: 8,
             showMap: true,
-            omnivadata: [],
+            hrxdata: [],
         }, options );
-        var omnivadata = settings.omnivadata;
-        //console.log(omnivadata);
+        var hrxdata = settings.hrxdata;
         var timeoutID = null;
         var currentLocationIcon = false;
         var autoSelectTerminal = false;
         var searchTimeout = null;
         var select = $(this);
-        var select_terminal = omnivadata.text_select_terminal;
-        var not_found = omnivadata.not_found;
+        var select_terminal = hrxdata.text_select_terminal;
+        var not_found = hrxdata.not_found;
         var terminalIcon = null;
         var homeIcon = null;
         var map = null;
-        //console.log(settings.terminals);
-        //var terminals = JSON.parse(settings.terminals);
         var terminals = [];
         $(this).find("option").each(function(){
             if ($(this).val()){
                 var terminal = {
                     name: $(this).attr('data-name'),
-                    zip: $(this).val(),
+                    id: $(this).val(),
                     y: $(this).attr('data-x'),
                     x: $(this).attr('data-y'),
-                    comment: $(this).attr('data-comment'),
                     address: $(this).attr('data-location'),
                     city: $(this).attr('data-city'),
                 }
                 terminals.push(terminal);
             }
         });
-        //settings.terminals = $.map(settings.terminals, function(value, index) { return [value]; });
-        /*
-        terminals.sort(function(a, b) {
-                if (a.name < b.name) {
-                    return -1;
-                }
-                if (a.name > b.name) {
-                    return 1;
-                }
-                    return 0;
-            }); 
-        */
-        //console.log(terminals);
         var selected = false;
         var previous_list = [];
         select.hide();
         if (select.val()){
             selected = {'id':select.val(),'text':select.find('option:selected').text(),'distance':false};
         }
-        /*
-        select.find('option').each(function(i,val){
-           if (val.value != "")
-            terminals.push({'id':val.value,'text':val.text,'distance':false}); 
-           if (val.selected == true){
-               selected = {'id':val.value,'text':val.text,'distance':false};
-           }
-               
-        });
-        */
         var container = $(document.createElement('div'));
-        container.addClass("omniva-terminals-list");
-        var dropdown = $('<div class = "dropdown">'+omnivadata.text_select_terminal+'</div>');
+        container.addClass("hrx-terminals-list");
+        var dropdown = $('<div class = "hrx-dropdown">'+hrxdata.text_select_terminal+'</div>');
         updateSelection();
         
-        var search = $('<input type = "text" placeholder = "'+omnivadata.text_enter_address+'" class = "search-input"/>');
+        var search = $('<input type = "text" placeholder = "'+hrxdata.text_enter_address+'" class = "hrx-search-input"/>');
         var loader = $('<div class = "loader"></div>').hide();
         var list = $(document.createElement('ul'));
-        var showMapBtn = $('<li><a href = "#" class = "show-in-map">'+omnivadata.text_show_in_map+'</a></li>');
-        var showMore = $('<div class = "show-more"><a href = "#">'+omnivadata.text_show_more+'</a></div>').hide();
-        var innerContainer = $('<div class = "inner-container"></div>').hide();
-        
+        list.addClass('hrx-scrollbar');
+        var showMapBtn = $('<a href = "#" class = "hrx-show-in-map hrx-btn">'+hrxdata.text_show_in_map+'<img src = "'+hrxdata.hrx_plugin_url+'/images/map-location.svg'+'"/></a>').hide();
+        var showMore = $('<div class = "hrx-show-more"><a href = "#">'+hrxdata.text_show_more+'</a></div>').hide();
+        var innerContainer = $('<div class = "hrx-inner-container"></div>').hide();
+
         $(container).insertAfter(select);
-        $(innerContainer).append(search,loader,list,showMore);
+        $(innerContainer).append(search,showMapBtn,loader,list,showMore);
         $(container).append(dropdown,innerContainer);
         
         if (settings.showMap == true){
@@ -86,11 +60,11 @@ var omniva_last_selected_terminal = '';
         
         refreshList(false);
         
-        list.on('click','a.show-in-map',function(e){
+        innerContainer.on('click','a.hrx-show-in-map',function(e){
             e.preventDefault();            
             showModal();
         });
-        $('body').on('click','.show-omniva-map',function(e){
+        $('body').on('click','.show-hrx-map',function(e){
             e.preventDefault();            
             showModal();
         });
@@ -127,18 +101,18 @@ var omniva_last_selected_terminal = '';
         });
         
         $(document).on('mousedown',function(e){
-            var container = $(".omniva-terminals-list");
+            var container = $(".hrx-terminals-list");
             if (!container.is(e.target) && container.has(e.target).length === 0 && container.hasClass('open')) 
                 toggleDropdown();
         });   
         
-        $('.omniva-back-to-list').off('click').on('click',function(){
+        $('.hrx-back-to-list').off('click').on('click',function(){
             listTerminals(terminals,0,previous_list);
             $(this).hide();
         });
         
         select.on('change',function(){
-            omniva_last_selected_terminal = $(this).val();         
+            hrx_last_selected_terminal = $(this).val();         
         });
        
         searchByAddress();
@@ -146,22 +120,22 @@ var omniva_last_selected_terminal = '';
         
         function showModal(){
             getLocation();
-            $('#omniva-search input').val(search.val());
-            //$('#omniva-search button').trigger('click');
-              if ($('.omniva-terminals-list input.search-input').val() != ''){
-                  $('#omniva-search input').val($('.omniva-terminals-list input.search-input').val());
-                 // $('#omniva-search button').trigger('click')
+            $('#hrx-search input').val(search.val());
+            //$('#hrx-search button').trigger('click');
+              if ($('.hrx-terminals-list input.hrx-search-input').val() != ''){
+                  $('#hrx-search input').val($('.hrx-terminals-list input.hrx-search-input').val());
+                 // $('#hrx-search button').trigger('click')
               }
             if (selected != false){
                 //console.log('showmodal');
                 $(terminals).each(function(i,val){
-                    if (selected.id == val.zip){
+                    if (selected.id == val.id){
                         zoomTo([val.x, val.y], selected.id);
                         return false;
                     }
                 });
             }
-            $('#omnivaLtModal').show();
+            $('#hrxModal').show();
             //getLocation();
             var event;
             if(typeof(Event) === 'function') {
@@ -177,8 +151,8 @@ var omniva_last_selected_terminal = '';
         function searchByAddress(){
             if (selected == false){
             
-            if (omnivadata.postcode != ''){
-                    search.val(omnivadata.postcode).trigger('selectpostcode');
+            if (hrxdata.postcode != ''){
+                    search.val(hrxdata.postcode).trigger('selectpostcode');
                 }
             }
         }
@@ -189,40 +163,38 @@ var omniva_last_selected_terminal = '';
         }
         
         function refreshList(autoselect){            
-            $('.omniva-back-to-list').hide();
+            $('.hrx-back-to-list').hide();
             var counter = 0;
             var city = false;
             var html = '';
             list.html('');
-            $('.found_terminals').html('');
+            $('.hrx-found-terminals').html('');
             $.each(terminals,function(i,val){
                 var li = $(document.createElement("li"));
-                li.attr('data-id',val.zip);
+                li.attr('data-id',val.id);
                 li.html(val.name);
                 if (val.distance !== undefined && val.distance != false){
                     li.append(' <strong>' + val.distance + 'km</strong>');  
                     counter++;
                     if (settings.showMap == true && counter <= settings.maxShow){
                         //console.log('add-to-map');
-                        html += '<li data-pos="['+[val.x, val.y]+']" data-id="'+val.zip+'" ><div><a class="omniva-li">'+counter+'. <b>'+val.name+'</b></a> <b>'+val.distance+' km.</b>\
-                                  <div align="left" id="omn-'+val.zip+'" class="omniva-details" style="display:none;"><small>\
-                                  '+val.address+' <br/>'+val.comment+'</small><br/>\
-                                  <button type="button" class="btn-marker" style="font-size:14px; padding:0px 5px;margin-bottom:10px; margin-top:5px;height:25px;" data-id="'+val.zip+'">'+select_terminal+'</button>\
+                        html += '<li data-pos="['+[val.x, val.y]+']" data-id="'+val.id+'" ><div><a class="hrx-li">'+counter+'. '+val.name+'</a> <b>'+val.distance+' km.</b>\
+                                  <div align="left" id="hrx-'+val.id+'" class="hrx-details" style="display:none;"><br/>\
+                                  <button type="button" class="btn-marker hrx-btn" style="font-size:14px; padding:0px 5px;margin-bottom:10px; margin-top:5px;height:25px;" data-id="'+val.id+'">'+select_terminal+'</button>\
                                   </div>\
                                   </div></li>';
                     }
                 } else {
                     if (settings.showMap == true ){
                         //console.log('add-to-map');
-                        html += '<li data-pos="['+[val.x, val.y]+']" data-id="'+val.zip+'" ><div><a class="omniva-li">'+(i+1)+'. <b>'+val.name+'</b></a>\
-                                  <div align="left" id="omn-'+val.zip+'" class="omniva-details" style="display:none;"><small>\
-                                  '+val.address+' <br/>'+val.comment+'</small><br/>\
-                                  <button type="button" class="btn-marker" style="font-size:14px; padding:0px 5px;margin-bottom:10px; margin-top:5px;height:25px;" data-id="'+val.zip+'">'+select_terminal+'</button>\
+                        html += '<li data-pos="['+[val.x, val.y]+']" data-id="'+val.id+'" ><div><a class="hrx-li">'+(i+1)+'. '+val.name+'</a>\
+                                  <div align="left" id="hrx-'+val.id+'" class="hrx-details" style="display:none;"><br/>\
+                                  <button type="button" class="btn-marker hrx-btn" style="font-size:14px; padding:0px 5px;margin-bottom:10px; margin-top:5px;height:25px;" data-id="'+val.id+'">'+select_terminal+'</button>\
                                   </div>\
                                   </div></li>';
                     }
                 }
-                if (selected != false && selected.id == val.zip){
+                if (selected != false && selected.id == val.id){
                     li.addClass('selected');
                 }
                 if (counter > settings.maxShow){
@@ -261,7 +233,7 @@ var omniva_last_selected_terminal = '';
             */
             list.scrollTop(topOffset);
             if (settings.showMap == true){
-                document.querySelector('.found_terminals').innerHTML = '<ul class="omniva-terminals-listing" start="1">'+html+'</ul>';
+                document.querySelector('.hrx-found-terminals').innerHTML = '<ul class="hrx-terminals-listing" start="1">'+html+'</ul>';
                 if (selected != false && selected.id != 0){
                     map.eachLayer(function (layer) { 
                         if (layer.options.terminalId !== undefined && L.DomUtil.hasClass(layer._icon, "active")){
@@ -376,11 +348,12 @@ var omniva_last_selected_terminal = '';
                 refreshList(autoselect);
                 return false;
             }
-            $.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine="+address+"&sourceCountry="+omnivadata.omniva_current_country+"&category=&outFields=Postal&maxLocations=1&forStorage=false&f=pjson", function( data ) {
+            $.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine="+address+"&sourceCountry="+hrxdata.hrx_current_country+"&category=&outFields=Postal&maxLocations=1&forStorage=false&f=pjson", function( data ) {
               if (data.candidates != undefined && data.candidates.length > 0){
                 calculateDistance(data.candidates[0].location.y,data.candidates[0].location.x);
                 refreshList(autoselect);
-                list.prepend(showMapBtn);
+                //list.prepend(showMapBtn);
+                showMapBtn.show();
                 //console.log('add');
                 showMore.show();
                 if (settings.showMap == true){
@@ -391,7 +364,7 @@ var omniva_last_selected_terminal = '';
         }
         
         function suggest(address){
-            $.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text="+address+"&f=pjson&sourceCountry="+omnivadata.omniva_current_country+"&maxSuggestions=1", function( data ) {
+            $.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text="+address+"&f=pjson&sourceCountry="+hrxdata.hrx_current_country+"&maxSuggestions=1", function( data ) {
               if (data.suggestions != undefined && data.suggestions.length > 0){
                 findPosition(data.suggestions[0].text,false);
               }
@@ -399,27 +372,27 @@ var omniva_last_selected_terminal = '';
         }
         
         function initMap(){
-           $('#omnivaMapContainer').html('<div id="omnivaMap"></div>');
-          if (omnivadata.omniva_current_country == "LT"){
-            map = L.map('omnivaMap').setView([54.999921, 23.96472], 8);
+           $('#hrxMapContainer').html('<div id="hrxMap"></div>');
+          if (hrxdata.hrx_current_country == "LT"){
+            map = L.map('hrxMap').setView([54.999921, 23.96472], 8);
           }
-          else if (omnivadata.omniva_current_country == "LV"){
-            map = L.map('omnivaMap').setView([56.8796, 24.6032], 8);
+          else if (hrxdata.hrx_current_country == "LV"){
+            map = L.map('hrxMap').setView([56.8796, 24.6032], 8);
           }
-          else if (omnivadata.omniva_current_country == "EE"){
-            map = L.map('omnivaMap').setView([58.7952, 25.5923], 7);
+          else if (hrxdata.hrx_current_country == "EE"){
+            map = L.map('hrxMap').setView([58.7952, 25.5923], 7);
           } else {
-            map = L.map('omnivaMap').setView([54.999921, 23.96472], 8);
+            map = L.map('hrxMap').setView([54.999921, 23.96472], 8);
           }
-          L.tileLayer('https://maps.omnivasiunta.lt/tile/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.omniva.lt">Hrx</a>' +
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.hrx.eu">HRX</a>' +
                     ' | Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
             }).addTo(map);
 
             var Icon = L.Icon.extend({
                 options: {
                     //shadowUrl: 'leaf-shadow.png',
-                    iconSize:     [29, 34],
+                    iconSize:     [41, 55],
                     //shadowSize:   [50, 64],
                     iconAnchor:   [15, 34],
                     //shadowAnchor: [4, 62],
@@ -435,27 +408,27 @@ var omniva_last_selected_terminal = '';
             });
             
           
-            terminalIcon = new Icon({iconUrl: omnivadata.omniva_plugin_url+'sasi.png'});
-            homeIcon = new Icon2({iconUrl: omnivadata.omniva_plugin_url+'locator_img.png'});
+            terminalIcon = new Icon({iconUrl: hrxdata.hrx_plugin_url+'/images/map-pin.png'});
+            homeIcon = new Icon2({iconUrl: hrxdata.hrx_plugin_url+'locator_img.png'});
             
           var locations = terminals;
           
             jQuery.each( locations, function( key, location ) {
-              L.marker([location.x, location.y], {icon: terminalIcon, terminalId:location.zip }).on('click',function(e){ listTerminals(locations,0,this.options.terminalId);terminalDetails(this.options.terminalId);}).addTo(map);
+              L.marker([location.x, location.y], {icon: terminalIcon, terminalId:location.id }).on('click',function(e){ listTerminals(locations,0,this.options.terminalId);terminalDetails(this.options.terminalId);}).addTo(map);
             });
           
           //show button
-          $('.show-omniva-map').show(); 
+          $('.show-hrx-map').show(); 
           
-          $('#terminalsModal').on('click',function(){$('#omnivaLtModal').hide();});
-          $('#omniva-search input').off('keyup focus').on('keyup focus',function(){
+          $('#closeHrxModal').on('click',function(){$('#hrxModal').hide();});
+          $('#hrx-search input').off('keyup focus').on('keyup focus',function(){
                 clearTimeout(timeoutID);      
-                timeoutID = setTimeout(function(){ autoComplete($('#omniva-search input').val())}, 500);    
+                timeoutID = setTimeout(function(){ autoComplete($('#hrx-search input').val())}, 500);    
                       
             });
             
-            $('.omniva-autocomplete ul').off('click').on('click','li',function(){
-                $('#omniva-search input').val($(this).text());
+            $('.hrx-autocomplete ul').off('click').on('click','li',function(){
+                $('#hrx-search input').val($(this).text());
                 /*
                 if ($(this).attr('data-location-y') !== undefined){
                     setCurrentLocation([$(this).attr('data-location-y'),$(this).attr('data-location-x')]);
@@ -463,68 +436,70 @@ var omniva_last_selected_terminal = '';
                     refreshList(false);
                 }
                 */
-                $('#omniva-search #map-search-button').trigger('click');
-                $('.omniva-autocomplete').hide();
+                $('#hrx-search #hrx-search-button').trigger('click');
+                $('.hrx-autocomplete').hide();
             });
             $(document).click(function(e){
-                var container = $(".omniva-autocomplete");
+                var container = $(".hrx-autocomplete");
                 if (!container.is(e.target) && container.has(e.target).length === 0) 
                     container.hide();
             });
           
-            $('#terminalsModal').on('click',function(){
-                $('#omnivaLtModal').hide();
+            $('#closeHrxModal').on('click',function(){
+                $('#hrxModal').hide();
             });
-            $('#omniva-search #map-search-button').off('click').on('click',function(e){
+            $('#hrx-search #hrx-search-button').off('click').on('click',function(e){
               e.preventDefault();
-              var postcode = $('#omniva-search input').val();
+              var postcode = $('#hrx-search input').val();
               findPosition(postcode,false);
             });
-            $('.found_terminals').on('click','li',function(){
+            $('.hrx-found-terminals').on('click','li',function(){
+                $('.hrx-found-terminals li').removeClass('active');
+                $(this).addClass('active');
                 zoomTo(JSON.parse($(this).attr('data-pos')),$(this).attr('data-id'));
             });
-            $('.found_terminals').on('click','li button',function(){
+            $('.hrx-found-terminals').on('click','li button',function(){
                 terminalSelected($(this).attr('data-id'));
             });
         }
         
         function autoComplete(address){
             var founded = [];
-            $('.omniva-autocomplete ul').html('');
-            $('.omniva-autocomplete').hide();
+            $('.hrx-autocomplete ul').html('');
+            $('.hrx-autocomplete').hide();
             if (address == "" || address.length < 3) return false;
-            $('#omniva-search input').val(address);
-            //$.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine="+address+"&sourceCountry="+omniva_current_country+"&category=&outFields=Postal,StAddr&maxLocations=5&forStorage=false&f=pjson", function( data ) {
-            $.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text="+address+"&sourceCountry="+omnivadata.omniva_current_country+"&f=pjson&maxSuggestions=4", function( data ) {
+            $('#hrx-search input').val(address);
+            //$.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?singleLine="+address+"&sourceCountry="+hrx_current_country+"&category=&outFields=Postal,StAddr&maxLocations=5&forStorage=false&f=pjson", function( data ) {
+            $.getJSON( "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/suggest?text="+address+"&sourceCountry="+hrxdata.hrx_current_country+"&f=pjson&maxSuggestions=4", function( data ) {
               if (data.suggestions != undefined && data.suggestions.length > 0){
                   $.each(data.suggestions ,function(i,item){
                     //console.log(item);
                     //if (founded.indexOf(item.attributes.StAddr) == -1){
                         //const li = $("<li data-location-y = '"+item.location.y+"' data-location-x = '"+item.location.x+"'>"+item.address+"</li>");
                         const li = $("<li data-magickey = '"+item.magicKey+"' data-text = '"+item.text+"'>"+item.text+"</li>");
-                        $(".omniva-autocomplete ul").append(li);
+                        $(".hrx-autocomplete ul").append(li);
                     //}
                     //if (item.attributes.StAddr != ""){
                     //    founded.push(item.attributes.StAddr);
                     //}
                   });
               }
-                  if ($(".omniva-autocomplete ul li").length == 0){
-                      $(".omniva-autocomplete ul").append('<li>'+not_found+'</li>');
+                  if ($(".hrx-autocomplete ul li").length == 0){
+                      $(".hrx-autocomplete ul").append('<li>'+not_found+'</li>');
                   }
-              $('.omniva-autocomplete').show();
+              $('.hrx-autocomplete').show();
             });
         }
         
         function terminalDetails(id) {
             /*
-            terminals = document.querySelectorAll(".omniva-details")
+            terminals = document.querySelectorAll(".hrx-details")
             for(i=0; i <terminals.length; i++) {
                 terminals[i].style.display = 'none';
             }
             */
-            $('.omniva-terminals-listing li div.omniva-details').hide();
-            id = 'omn-'+id;
+            $('.hrx-terminals-listing li div.hrx-details').hide();
+            id = 'hrx-'+id;
             dispHrx = document.getElementById(id)
             if(dispHrx){
                 dispHrx.style.display = 'block';
@@ -561,50 +536,49 @@ var omniva_last_selected_terminal = '';
              var html = '', counter=1;
              if (id != 0 && !$.isArray(id)){
                 previous_list = [];
-                $('.found_terminals li').each(function(){
+                $('.hrx-found-terminals li').each(function(){
                     previous_list.push($(this).attr('data-id'));
                 });
-                $('.omniva-back-to-list').show();
+                $('.hrx-back-to-list').show();
              }
              if ($.isArray(id)){
                 previous_list = []; 
              }
-            $('.found_terminals').html('');
+            $('.hrx-found-terminals').html('');
             //console.log(id);
             $.each( locations, function( key, location ) {
               if (limit != 0 && limit < counter){
                 return false;
               }
               if ($.isArray(id)){
-                if ( $.inArray( location.zip, id) == -1){
+                if ( $.inArray( location.id, id) == -1){
                     return true;
                 }
               }
-              else if (id !=0 && id != location.zip){
+              else if (id !=0 && id != location.id){
                 return true;
               }
               if (autoSelectTerminal && counter == 1){
-                terminalSelected(location.zip,false);
+                terminalSelected(location.id,false);
               }
               var destination = [location.x, location.y]
               var distance = 0;
               if (location['distance'] != undefined){
                 distance = location['distance'];
               }
-              html += '<li data-pos="['+destination+']" data-id="'+location.zip+'" ><div><a class="omniva-li">'+counter+'. <b>'+location.name+'</b></a>';
+              html += '<li data-pos="['+destination+']" data-id="'+location.id+'" ><div><a class="hrx-li">'+counter+'. <b>'+location.name+'</b></a>';
               if (distance != 0) {
               html += ' <b>'+distance+' km.</b>';
               }
-               html += '<div align="left" id="omn-'+location.zip+'" class="omniva-details" style="display:none;"><small>\
-                                          '+location.address+' <br/>'+location.comment+'</small><br/>\
-                                          <button type="button" class="btn-marker" style="font-size:14px; padding:0px 5px;margin-bottom:10px; margin-top:5px;height:25px;" data-id="'+location.zip+'">'+select_terminal+'</button>\
+               html += '<div align="left" id="hrx-'+location.id+'" class="hrx-details" style="display:none;"><br/>\
+                                          <button type="button" class="btn-marker hrx-btn" style="font-size:14px; padding:0px 5px;margin-bottom:10px; margin-top:5px;height:25px;" data-id="'+location.id+'">'+select_terminal+'</button>\
                                           </div>\
                                           </div></li>';
                                               
                               counter++;           
                                
             });
-            document.querySelector('.found_terminals').innerHTML = '<ul class="omniva-terminals-listing" start="1">'+html+'</ul>';
+            document.querySelector('.hrx-found-terminals').innerHTML = '<ul class="hrx-terminals-listing" start="1">'+html+'</ul>';
             if (id != 0){
                 map.eachLayer(function (layer) { 
                     if (layer.options.terminalId !== undefined && L.DomUtil.hasClass(layer._icon, "active")){
@@ -636,7 +610,7 @@ var omniva_last_selected_terminal = '';
           if (close === undefined){
               close = true;
           }
-              var matches = document.querySelectorAll(".omnivaOption");
+              var matches = document.querySelectorAll(".hrxOption");
               for (var i = 0; i < matches.length; i++) {
                 node = matches[i]
                 if ( node.value.includes(terminal)) {
@@ -649,7 +623,7 @@ var omniva_last_selected_terminal = '';
               select.val(terminal);
               select.trigger("change");
               if (close){
-                $('#omnivaLtModal').hide();
+                $('#hrxModal').hide();
             }
         }
         

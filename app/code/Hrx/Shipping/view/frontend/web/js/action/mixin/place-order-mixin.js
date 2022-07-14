@@ -1,8 +1,8 @@
 define([
     'mage/utils/wrapper',
     'Magento_Checkout/js/model/quote',
-    'Hrx_Shipping/js/omniva-data'
-], function (wrapper, quote, $omnivaData) {
+    'Hrx_Shipping/js/hrx-data'
+], function (wrapper, quote, $hrxData) {
     'use strict';
 
     return function (placeOrderAction) {
@@ -15,7 +15,7 @@ define([
                 return originalAction(paymentData, redirectOnSuccess);
             }
                 
-            let terminal = $omnivaData.getPickupPoint();
+            let terminal = $hrxData.getPickupPoint();
                 
             if (selectedShippingMethod.method_code === 'parcel_terminal' && !terminal) {
                 return originalAction(paymentData, redirectOnSuccess);

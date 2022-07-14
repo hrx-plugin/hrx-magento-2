@@ -22,7 +22,7 @@ define([
         }));
     }
 
-    $('#change-terminal').on('click',function () {
+    $('#hrx-change-terminal').on('click',function () {
         var select = $('#hrx_parcel_terminal_list');
         var url = select.attr('data-url');
         var order_id = select.attr('data-order');

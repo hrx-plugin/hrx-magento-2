@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <add id="Hrx_Shipping::manifest" title="Hrx manifest" parent = "Magento_Sales::sales_operation" module="Hrx_Shipping" action="hrx/orders/index" sortOrder="51" resource="Magento_Sales::sales_operation"/>
+        <add id="Hrx_Shipping::manifest" title="HRX orders" parent = "Magento_Sales::sales_operation" module="Hrx_Shipping" action="hrx/orders/index" sortOrder="51" resource="Magento_Sales::sales_operation"/>
     </menu>
 </config>

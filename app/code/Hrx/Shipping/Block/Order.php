@@ -4,7 +4,7 @@ namespace Hrx\Shipping\Block;
 
 use Hrx\Shipping\Model\Carrier;
 
-class Manifest extends \Magento\Framework\View\Element\Template
+class Order extends \Magento\Framework\View\Element\Template
 {
 
     protected $_orderCollectionFactory;
@@ -47,13 +47,6 @@ class Manifest extends \Magento\Framework\View\Element\Template
         if (!$barcode) {
             return '-';
         }
-        return $barcode;
-    }
-
-    public function getOrderActions($order) {
-        $barcode = '';
-        $barcode .= '<a href = "'.$this->getUrl('hrx/order') .'?order_id='. $order->getId().'" target = "_blank">'.$order->getId() . '</a> ';
-            
         return $barcode;
     }
     

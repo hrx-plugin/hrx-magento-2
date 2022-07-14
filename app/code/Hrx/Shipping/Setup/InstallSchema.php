@@ -26,7 +26,8 @@ class InstallSchema implements InstallSchemaInterface
                 $installer->getTable('quote_address'),
                 'hrx_parcel_terminal',
                 [
-                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                    'length' => 100,
                     'nullable' => true,
                     'comment' => 'Hrx Parcel Terminal',
                 ]
@@ -38,7 +39,8 @@ class InstallSchema implements InstallSchemaInterface
                 $installer->getTable('sales_order_address'),
                 'hrx_parcel_terminal',
                 [
-                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                    'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                    'length' => 100,
                     'nullable' => true,
                     'comment' => 'Hrx Parcel Terminal',
                 ]
