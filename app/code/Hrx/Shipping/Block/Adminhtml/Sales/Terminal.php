@@ -98,6 +98,11 @@ class Terminal extends \Magento\Backend\Block\Template
         return $this->coreRegistry->registry('current_order');
     }
 
+    public function isReadonly() {
+        $hrx_order = $this->hrxCarrier->getHrxOrder($this->getOrder());
+        return $hrx_order->getStatus() != 'new';
+    }
+
     public function blockIsVisible() {
         if (isset($this->data['up_to_version'])) {
             if ($this->getMagentoVersion() >= $this->data['up_to_version']) {

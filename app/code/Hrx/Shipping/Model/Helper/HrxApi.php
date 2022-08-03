@@ -71,33 +71,34 @@ class HrxApi {
         return $phone;
     }
 
-    public function createShipment($order, $shopify_order_address) {
-        if (!isset($shopify_order_address['data']['order'])) {
-            throw new \Exception('Failed to get order address');
-        }
-        if ($order->status != 'new') {
+    public function createShipment($hrx_order, $order, $terminal) {
+        if ($hrx_order->getStatus() != 'new') {
             throw new \Exception('Incorrect order status');
+        }
+        if (!$terminal) {
+            throw new \Exception('Parcel terminal not selected');
         }
         /*** Create order ***/
         // Building receiver
+        $shippingAddress = $order->getShippingAddress();
         $receiver = new Receiver();
-        $receiver->setName($shopify_order_address['data']['order']['shippingAddress']['name'] ?? '');
-        $receiver->setEmail($shopify_order_address['data']['order']['email'] ?? '');
-        $receiver->setPhone($this->fixNumber($shopify_order_address['data']['order']['shippingAddress']['phone'] ?? '', $order->terminal->phone_prefix), $order->terminal->phone_regex ?? '');
+        $receiver->setName($shippingAddress->getFirstname() . ' ' .  $shippingAddress->getLastname());
+        $receiver->setEmail($shippingAddress->getEmail());
+        $receiver->setPhone($this->fixNumber($shippingAddress->getTelephone(), $terminal->getPhonePrefix()), $terminal->getPhoneRegex());
 
         //Building shipment
         $shipment = new Shipment();
-        $shipment->setReference('REF_' . $order->shopify_order_id);
+        $shipment->setReference('REF_MG' . $order->getIncrementId());
         $shipment->setComment('');
-        $shipment->setLength((float)$order->length);
-        $shipment->setWidth((float)$order->width);
-        $shipment->setHeight((float)$order->height);
-        $shipment->setWeight((float)$order->weight); // kg
+        $shipment->setLength((float)$hrx_order->getLength());
+        $shipment->setWidth((float)$hrx_order->getWidth());
+        $shipment->setHeight((float)$hrx_order->getHeight());
+        $shipment->setWeight((float)$hrx_order->getWeight()); // kg
 
         //Building order
         $api_order = new Order();
-        $api_order->setPickupLocationId($order->warehouse ? $order->warehouse->warehouse_id : null);
-        $api_order->setDeliveryLocation($order->terminal ? $order->terminal->terminal_id : null);
+        $api_order->setPickupLocationId($hrx_order->getHrxWarehouseId());
+        $api_order->setDeliveryLocation($hrx_order->getHrxTerminalId());
         $api_order->setReceiver($receiver);
         $api_order->setShipment($shipment);
         $order_data = $api_order->prepareOrderData();
@@ -106,10 +107,10 @@ class HrxApi {
         //var_dump($order_data); exit;
         $order_response = $this->api->generateOrder($order_data);
         $order_id = isset($order_response['id']) ? $order_response['id'] : false;
-        //var_dump($order_response);
+        //var_dump($order_response); exit;
         if ( $order_id ) {
-            $order->order_id = $order_id;
-            $order->status = 'ready';
+            $hrx_order->setHrxOrderId($order_id);
+            $hrx_order->setStatus('ready');
 
             //get newly created order to get tracking
             //get tracking number in cronjob
@@ -119,24 +120,41 @@ class HrxApi {
             $order->tracking = $_order['tracking_number'] ?? null;
             */
 
-            $order->save();
+            $hrx_order->save();
         } else {
             throw new \Exception('Failed to create order');
         }
     }
 
-    public function getOrder($order) {
-        if ($order->order_id) {
-            return $this->api->getOrder($order->order_id);
+    public function getOrder($hrx_order) {
+        if ($hrx_order->getHrxOrderId()) {
+            return $this->api->getOrder($hrx_order->getHrxOrderId());
         }
         return [];
     }
 
-    public function getLabel($order) {
-        if ($order->order_id) {
-            return $this->api->getLabel($order->order_id);
+    public function getLabel($hrx_order) {
+        if ($hrx_order->getHrxOrderId()) {
+            return $this->api->getLabel($hrx_order->getHrxOrderId());
         }
         return [];
+    }
+
+    public function getReturnLabel($hrx_order) {
+        if ($hrx_order->getHrxOrderId()) {
+            return $this->api->getReturnLabel($hrx_order->getHrxOrderId());
+        }
+        return [];
+    }
+
+    public function cancelOrder($hrx_order) {
+        if ($hrx_order->getHrxOrderId()) {
+            if (!in_array($hrx_order->getStatus(), ['new', 'ready', 'error'])) {
+                throw new \Exception('Incorrect order status');
+            }
+            return $this->api->cancelOrder($hrx_order->getHrxOrderId());
+        }
+        return false;
     }
 
 }

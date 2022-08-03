@@ -313,24 +313,24 @@ class InstallSchema implements InstallSchemaInterface
                     )
                     ->addColumn(
                             'hrx_terminal_id',
-                            \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
-                            null,
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            100,
                             ['nullable => true'],
                             'Terminal id'
                     )
                     ->addColumn(
                             'hrx_warehouse_id',
-                            \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
-                            null,
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            100,
                             ['nullable => true'],
                             'Warehouse id'
                     )
                     ->addColumn(
-                            'shop_order_id',
-                            \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
-                            null,
+                            'hrx_order_id',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            100,
                             ['nullable => true'],
-                            'Shop order id'
+                            'Hrx order id'
                     )
                     ->addColumn(
                             'status',
@@ -345,6 +345,13 @@ class InstallSchema implements InstallSchemaInterface
                             255,
                             ['nullable => true'],
                             'Tracking'
+                    )
+                    ->addColumn(
+                            'tracking_url',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            255,
+                            ['nullable => true'],
+                            'Tracking URL'
                     )
                     ->addColumn(
                             'warehouse_name',

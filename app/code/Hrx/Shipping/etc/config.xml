@@ -19,7 +19,10 @@
                 <specificerrmsg>This shipping method is currently unavailable. If you would like to ship using this shipping method, please contact us.</specificerrmsg>
                 <unit_of_measure>KG</unit_of_measure>
                 <max_package_weight>30</max_package_weight>
-                <price>0</price>
+                <default_weight>1</default_weight>
+                <default_width>10</default_width>
+                <default_length>10</default_length>
+                <default_height>10</default_height>
             </hrx>
         </carriers>
     </default>

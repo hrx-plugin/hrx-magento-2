@@ -10,19 +10,28 @@ use Magento\Sales\Api\OrderManagementInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Hrx\Shipping\Model\Carrier;
 
 /**
  * Class MassManifest
  */
 class UpdateTerminal extends \Magento\Framework\App\Action\Action
 {
-  protected $hrx_carrier;
+  protected $hrxCarrier;
   protected $orderRepository;
    
-  public function __construct(Context $context, Filter $filter, CollectionFactory $collectionFactory, OrderManagementInterface $orderManagement, \Magento\Sales\Api\OrderRepositoryInterface $orderRepository)
+  public function __construct(
+    Context $context, 
+    Filter $filter, 
+    CollectionFactory $collectionFactory, 
+    OrderManagementInterface $orderManagement, 
+    Carrier $hrxCarrier,
+    \Magento\Sales\Api\OrderRepositoryInterface $orderRepository
+    )
   {
     //$this->_objectManager = $objectmanager;
     $this->orderRepository = $orderRepository;
+    $this->hrxCarrier = $hrxCarrier;
     parent::__construct($context);
   }
   
@@ -36,6 +45,11 @@ class UpdateTerminal extends \Magento\Framework\App\Action\Action
         $order_address = $order->getShippingAddress();
         $order_address->setHrxParcelTerminal( $terminal);
         $order_address->save();
+
+        $hrx_order = $this->hrxCarrier->getHrxOrder($order);
+        $hrx_order->setHrxTerminalId($terminal);
+        $hrx_order->save();
+
         $text = __('Parcel terminal updated');
         $this->messageManager->addSuccess($text);
     } else {

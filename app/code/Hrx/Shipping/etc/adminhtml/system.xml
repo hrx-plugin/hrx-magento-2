@@ -26,8 +26,29 @@
                     <label>API secret</label>
                 </field>
                 <field id="max_package_weight" translate="label" type="text" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="1">
-                    <label>Maximum Package Weight</label>
-                    <validate>validate-number validate-zero-or-greater</validate>
+                    <label>Maximum package weight (kg)</label>
+                    <validate>required validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="default_weight" translate="label" type="text" sortOrder="141" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
+                    <label>Default package weight (kg)</label>
+                    <validate>required validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="default_width" translate="label" type="text" sortOrder="142" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
+                    <label>Default package width (cm)</label>
+                    <validate>required validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="default_length" translate="label" type="text" sortOrder="143" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
+                    <label>Default package length (cm)</label>
+                    <validate>required validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="default_height" translate="label" type="text" sortOrder="144" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
+                    <label>Default package height (cm)</label>
+                    <validate>required validate-number validate-zero-or-greater</validate>
+                </field>
+                <field id="default_warehouse" translate="label" type="select" sortOrder="145" showInDefault="1" showInWebsite="1" showInStore="0" canRestore="0">
+                    <label>Default warehouse</label>
+                    <source_model>Hrx\Shipping\Model\Source\Warehouse</source_model>
+                    <can_be_empty>1</can_be_empty>
                 </field>
                 <!-- Free shipping price toggler -->
                 <field id="free_shipping_enable" translate="label" type="select" sortOrder="179" showInDefault="1" showInWebsite="1" showInStore="0">

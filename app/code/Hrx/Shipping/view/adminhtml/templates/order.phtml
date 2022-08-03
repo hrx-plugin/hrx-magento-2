@@ -1,1 +1,98 @@
-Test
+<div class = "hrx-order">
+    <div id = "hrx-messages"></div>
+    <h2>Order #<?php echo $this->getOrderNumber();?> <?php echo $this->readonly()?'view':'edit';?></h2>
+    <form class = "hrx-order-form" id = "hrx-order-form" method = "post">
+        <input name="form_key" type="hidden" value="<?php echo $this->getFormKey();?>">
+        <input type = "hidden" name = "order_id" value = "<?php echo $this->getOrderId(); ?>"/>
+        <div class = "hrx-form-row">
+            <label for = "parcel_terminal"><?php echo __('Parcel terminal'); ?></label>
+            <select name = "terminal_id" id = "parcel_terminal" <?php $this->inputDisabled(); ?>>
+                <?php echo $this->terminalOptions(); ?>
+            </select>
+        </div>
+        <div class = "hrx-form-row">
+            <label for = "warehouse"><?php echo __('Warehouse'); ?></label>
+            <select name = "warehouse_id" id = "warehouse" <?php $this->inputDisabled(); ?>>
+                <?php echo $this->warehouseOptions(); ?>
+            </select>
+        </div>
+        
+        <div class = "hrx-form-row has-columns">
+            <div class = "hrx-form-col-4">
+                <label for = ""><?php echo __('Width'); ?></label>
+                <div class = "hrx-input-group">   
+                    <input type = "number" step = "0.01" id = "width" name = "width" value = "<?php echo $this->getHrxOrder()->getWidth(); ?>" <?php $this->inputDisabled(); ?>/>
+                    <span>cm</span>
+                </div>
+            </div>
+            <div class = "hrx-form-col-4">
+                <label for = ""><?php echo __('Height'); ?></label>
+                <div class = "hrx-input-group">   
+                    <input type = "number" step = "0.01" id = "height" name = "height" value = "<?php echo $this->getHrxOrder()->getHeight(); ?>" <?php $this->inputDisabled(); ?>/>
+                    <span>cm</span>
+                </div>
+            </div>
+            <div class = "hrx-form-col-4">
+                <label for = ""><?php echo __('Length'); ?></label>
+                <div class = "hrx-input-group">   
+                    <input type = "number" step = "0.01" id = "length" name = "length" value = "<?php echo $this->getHrxOrder()->getLength(); ?>" <?php $this->inputDisabled(); ?>/>
+                    <span>cm</span>
+                </div>
+            </div>
+            <div class = "hrx-form-col-4">
+                <label for = ""><?php echo __('Weight'); ?></label>
+                <div class = "hrx-input-group">   
+                    <input type = "number" step = "0.001" id = "weight" name = "weight" value = "<?php echo $this->getHrxOrder()->getWeight(); ?>" <?php $this->inputDisabled(); ?>/>
+                    <span>kg</span>
+                </div>
+            </div>
+        </div>
+        <?php if (!$this->readOnly()): ?>
+        <div class = "hrx-form-row">
+            <button class = "hrx-btn" id = "hrx-save-btn" type = "button"><?php echo __('Save'); ?></button>
+        </div>
+        <?php endif; ?>
+    </form>
+</div>
+<script>
+        require(['jquery'], function ($) {
+            if ($('#hrx-save-btn')) {
+                $('#hrx-save-btn').on('click', function() {
+                    $("#hrx-messages").html('');
+                    var ajaxRequest;
+                    var form = $('#hrx-order-form')[0];
+                    var data = new FormData(form);
+                    ajaxRequest = jQuery.ajax({
+                        url: "<?php echo $this->getUrl('hrx/order/save'); ?>",
+                        type: 'POST',
+                        data: data,
+                        processData: false,
+                        contentType: false,
+                        beforeSend: function () {
+                            jQuery('#loader').show();
+                        }
+                    });
+                        //Show successfully for submit message
+                    ajaxRequest.done(function (response, textStatus, jqXHR) {
+                        if (typeof response.messages !== 'undefined' ) {
+                            $(response.messages).each(function(index,msg) {
+                                $("#hrx-messages").append('<div class = "hrx-error">'+msg+'</div>');
+                            });
+                        }
+                        if (typeof response.status !== 'undefined' && response.status == 'ok') {
+                            $("#hrx-messages").append('<div class = "hrx-ok">Saved!</div>');
+                        }
+                        $('#loader').hide();
+                    });
+
+                        //On failure of request this function will be called
+                    ajaxRequest.fail(function () {
+                        $('#loader').hide();
+                    });
+                });
+            }
+
+            $('.page-title').html('<a href = "<?php echo $this->getUrl('hrx/orders/index'); ?>" class = "hrx-back"> Back to HRX orders</a>');
+            
+        });
+    </script>

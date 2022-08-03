@@ -1,29 +1,15 @@
 
 <?php
-$items = $this->getOrders();
+$orders = $this->getOrders();
 if ($this->getMagentoVersion() < '2.3.0') {
     $old_version = true;
 } else {
     $old_version = false;
 }
-if (count($items)):
-//group items by shipping date DESC
-    $grouped_items = array();
-    foreach ($items as $item) {
-        if ($item->getManifestGenerationDate() == NULL) {
-            $date = "new";
-        } else {
-            $date = date('Y-m-d H:i', strtotime($item->getManifestGenerationDate()));
-        }
-        if (!isset($grouped_items[$date])) {
-            $grouped_items[$date] = array();
-        }
-        $grouped_items[$date][] = $item;
-    }
-    krsort($grouped_items);
+if (count($orders)):
     $items_ignore = array();
-    $p_limit = 4;
-    $total_pages = ceil(count($grouped_items) / $p_limit);
+    $p_limit = 10;
+    $total_pages = ceil(count($orders) / $p_limit);
     $current_page = 1;
 
     if (isset($_GET['p'])) {
@@ -54,16 +40,8 @@ if (count($items)):
         echo $data;
     }
     ?>
-    <?php foreach ($grouped_items as $date => $orders): ?>
-        <?php
-        $counter++;
-        if ($current_page * $p_limit - $p_limit >= $counter)
-            continue;
-        if (($current_page) * $p_limit < $counter)
-            break;
-        ?>
+        <div id = "hrx-messages"></div>
         <br/>
-        <h3><?php echo ($date == "new" ? __('New orders') : $date); ?></h3>
         <div class = "grid">
             <table class="data-grid">
                 <thead>
@@ -72,7 +50,9 @@ if (count($items)):
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Order #'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Order status'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Parcel terminal'); ?></span></th>
+                        <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Warehouse'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Tracking'); ?></span></th>
+                        <th class = "data-grid-th"></th>
                         <th class = "data-grid-th"></th>
                     </tr>
                 </thead>
@@ -83,72 +63,61 @@ if (count($items)):
                             <?php
                             $order_items = array();
                             $ids = $order->getId();
+                            $hrx_order = $this->getHrxOrder($order);
                             ?>
                             <td><div class = "data-grid-cell-content"><input type = "checkbox" name = "items[]" class = "manifest-item" value = "<?php echo $ids; ?>"/></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $order->getIncrementId(); ?></div></td>
-                            <td><div class = "data-grid-cell-content"><?php echo $order->getIncrementId(); ?></div></td>
-                            <td><div class = "data-grid-cell-content"><?php echo $this->getTerminal($order); ?></div></td>
-                            <td><div class = "data-grid-cell-content"><?php echo $this->getOrderTrackings($order); ?></div></td>
-                            <td><div class = "data-grid-cell-content"><?php echo $this->getOrderActions($order); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $this->getStatus($hrx_order); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $this->getTerminal($hrx_order); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $this->getWarehouse($hrx_order); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $this->getTracking($hrx_order); ?></div></td>
+                            <td><div class = "data-grid-cell-content text-center"><?php echo $this->getOrderActions($hrx_order); ?></div></td>
+                            <td><div class = "data-grid-cell-content text-center"><?php echo $this->getOrderEdit($order); ?></div></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-    <?php endforeach; ?>
     <?php echo $this->getPagerHtml(); ?>
     <div>
         <br/>
         <div class="f-left">
-            <form id = "labels-print-form" action = "<?php echo $this->getUrl('hrx/orders/printlabels' . ($old_version ? 'ov' : '')); ?>" method = "POST">
-                <input type = "hidden" name = "form_key" value = "<?php echo $this->getFormKey(); ?>"/>
-            </form>
-            <form id = "labels-generate-form" action = "<?php echo $this->getUrl('hrx/orders/generatelabels' . ($old_version ? 'ov' : '')); ?>" method = "POST">
-                <input type = "hidden" name = "form_key" value = "<?php echo $this->getFormKey(); ?>"/>
-            </form>  
-            <button id="hrx_print_labels" title="<?php echo __('Print labels'); ?>" type="button" class="scalable save">
-                <span><span><span><?php echo __('Print labels'); ?></span></span></span>
+            <button title="<?php echo __('Print labels'); ?>" type="button" class="hrx-btn btn-outline mass-action" data-action = "label">
+                <?php echo __('Print labels'); ?>
             </button>    
-            <button id="hrx_print_return_labels" title="<?php echo __('Print return labels'); ?>" type="button" class="scalable save">
-                <span><span><span><?php echo __('Print return labels'); ?></span></span></span>
-            </button>    
+            <button title="<?php echo __('Print return labels'); ?>" type="button" class="hrx-btn btn-outline mass-action" data-action = "return_label">
+                <?php echo __('Print return labels'); ?>
+            </button>   
+            <button title="<?php echo __('Mark as ready'); ?>" type="button" class="hrx-btn mass-action" data-action = "ready">
+                <?php echo __('Mark as ready'); ?>
+            </button>   
+            <span class = "v-divider"></span>
+            <button title="<?php echo __('Delete orders'); ?>" type="button" class="hrx-btn btn-outline mass-action" data-action = "delete">
+                <?php echo __('Delete orders'); ?>
+            </button> 
         </div>
         <div class="f-clear"></div>
     </div>
     <script>
         require(['jquery'], function ($) {
             $('document').ready(function () {
-                
-                $('#print_manifest_labels').on('click', function () {
-                    var ids = "";
-                    $('.manifest-item:checked').each(function () {
-                        ids += $(this).val() + ";";
-                        var id = $(this).val();
-                        $('#labels-print-form').append('<input type="hidden" name="order_ids[]" value = "' + id + '" />');
-                    });
-                    if (ids == "") {
-                        alert('<?php echo __('Select orders'); ?>');
-                    } else {
-                        $('#labels-print-form').submit();
-                    }
-                    //console.log($('#item_ids').val());
-
+                $('.single-action').on('click', function () {
+                    var ids = $(this).attr('data-id');
+                    var action = $(this).attr('data-action');
+                    doAction(action, ids);
                 });
-
-                $('#hrx_print_labels').on('click', function () {
+                $('.mass-action').on('click', function () {
+                    var action = $(this).attr('data-action');
                     var ids = "";
                     $('.manifest-item:checked').each(function () {
                         ids += $(this).val() + ";";
                         var id = $(this).val();
-                        $('#labels-generate-form').append('<input type="hidden" name="order_ids[]" value = "' + id + '" />');
                     });
                     if (ids == "") {
                         alert('<?php echo __('Select orders'); ?>');
                     } else {
-                        $('#labels-generate-form').submit();
+                        doAction(action, ids);
                     }
-                    //console.log($('#item_ids').val());
-
                 });
                 $('.check-all').on('click', function () {
                     var checked = $(this).prop('checked');
@@ -157,6 +126,71 @@ if (count($items)):
                     });
                 });
             });
+
+            function doAction(action, ids) {
+                <?php
+                $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                $key_form = $objectManager->get('Magento\Framework\Data\Form\FormKey');
+                $form_Key = $key_form->getFormKey(); 
+                ?>
+                
+                $("#hrx-messages").html('');
+                var formKey = "<?php echo $form_Key; ?>";
+                var ajaxRequest;
+                    var form = $('#hrx-order-form')[0];
+                    var data = new FormData(form);
+                    ajaxRequest = jQuery.ajax({
+                        url: "<?php echo $this->getUrl('hrx/order/action'); ?>",
+                        type: 'POST',
+                        data: {action: action, ids: ids, form_key: formKey},
+                        beforeSend: function () {
+                            jQuery('#loader').show();
+                        }
+                    });
+                        //Show successfully for submit message
+                    ajaxRequest.done(function (response, textStatus, jqXHR) {
+                        if (typeof response.pdf !== 'undefined') {
+                            var byteCharacters = atob(response.pdf);
+                            var byteNumbers = new Array(byteCharacters.length);
+                            for (var i = 0; i < byteCharacters.length; i++) {
+                                byteNumbers[i] = byteCharacters.charCodeAt(i);
+                            }
+                            var byteArray = new Uint8Array(byteNumbers);
+                            var file = new Blob([byteArray], { type: 'application/pdf;base64' });
+                            var fileURL = URL.createObjectURL(file);
+                            const url = URL.createObjectURL(file);
+                            const a = document.createElement('a');
+                            //a.download = 'test.pdf';
+                            a.href = url;
+                            a.target = '_blank';
+
+                            a.click();
+
+                            setTimeout(function () {
+                                a.remove();
+                                URL.revokeObjectURL(url);
+                            }, 100);
+                        } else {
+                            if (typeof response.status !== 'undefined' && response.status == 'ok') {
+                                $("#hrx-messages").append('<div class = "hrx-ok">Done. Refreshing in 3 seconds ...</div>');
+                                setTimeout(function(){ location.reload(); }, 3000);
+                            }
+                        }
+                        if (typeof response.messages !== 'undefined' ) {
+                            $(response.messages).each(function(index,msg) {
+                                $("#hrx-messages").append('<div class = "hrx-error">'+msg+'</div>');
+                            });
+                        }
+                        
+                        //$('#loader').hide();
+                    });
+
+                        //On failure of request this function will be called
+                    ajaxRequest.fail(function () {
+                        //show error
+                        //$('#loader').hide();
+                    });
+            }
         });
     </script>
 <?php else: ?>

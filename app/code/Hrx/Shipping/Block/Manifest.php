@@ -32,36 +32,56 @@ class Manifest extends \Magento\Framework\View\Element\Template
         return $collection;
     }
 
-    public function getOrderTrackings($order) {
-        if ($this->getMagentoVersion() < '2.3.0') {
-            $old_version = true;
-        } else {
-            $old_version = false;
+    public function getOrderActions($order) {
+        if ($order->getStatus() == 'new') {
+            return '<button class = "hrx-btn btn-sm single-action" data-action = "ready" data-id = "' . $order->getOrderId() . '">'.__('Mark as ready').'</button> ';
         }
-        $barcode = '';
-        foreach ($order->getShipmentsCollection() as $shipment) {
-            foreach ($shipment->getAllTracks() as $tracknum) {
-                $barcode .= '<a href = "'.$this->getUrl('hrx/orders/printlabels' . ($old_version ? 'ov' : '')).'?barcode='.$tracknum->getNumber().'" target = "_blank">'.$tracknum->getNumber() . '</a> ';
-            }
+        if ($order->getStatus() != 'new' && $order->getStatus() != 'deleted' && $order->getStatus() != 'cancelled') {
+            return '<button class = "hrx-btn btn-sm btn-outline single-action" data-action = "label" data-id = "' . $order->getOrderId() . '">'.__('Label').'</button> ' . 
+            '<button class = "hrx-btn btn-sm btn-outline single-action" data-action = "return_label" data-id = "' . $order->getOrderId() . '">'.__('Return label').'</button>';
         }
-        if (!$barcode) {
-            return '-';
-        }
-        return $barcode;
     }
 
-    public function getOrderActions($order) {
-        $barcode = '';
-        $barcode .= '<a href = "'.$this->getUrl('hrx/order') .'?order_id='. $order->getId().'" target = "_blank">'.$order->getId() . '</a> ';
-            
-        return $barcode;
+    public function getOrderEdit($order) {
+        return '<a href = "'.$this->getUrl('hrx/order') .'?order_id='. $order->getId().'" class = "hrx-edit-btn"></a> ';
+    }
+
+    public function getTracking($order) {
+        if (!$order->getTracking()){
+            return '-';
+        }
+        if ($order->getTrackingUrl()) {
+            return '<a href = "'.$order->getTrackingUrl().'" target = "_blank">'.$order->getTracking().'</a>';
+        }
+        return $order->getTracking();
     }
     
     public function getTerminal($order) {
-        $shippingAddress = $order->getShippingAddress();
-        $terminal_id = $shippingAddress->getHrxParcelTerminal();
-        $parcel_terminal = $this->hrxCarrier->getTerminalAddress($terminal_id);
+        $parcel_terminal = $this->hrxCarrier->getTerminalAddress($order->getHrxTerminalId());
         return $parcel_terminal;
+    }
+
+    public function getWarehouse($order) {
+        $parcel_terminal = $this->hrxCarrier->getWarehouseAddress($order->getHrxWarehouseId());
+        return $parcel_terminal;
+    }
+
+    public function getHrxOrder($order) {
+        return $this->hrxCarrier->getHrxOrder($order);
+    }
+    
+    public function getStatus($order) {
+        $statuses = [
+            'new' => 'New',
+            'ready' => 'Ready',
+            'in_delivery' => 'In delivery',
+            'delivered' => 'Delivered',
+            'in_return' => 'In return',
+            'returned' => 'Returned',
+            'deleted' => 'Deleted',
+            'cancelled' => 'Cancelled'
+        ];
+        return $statuses[$order->getStatus()] ?? '-';
     }
     
 

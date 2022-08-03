@@ -90,6 +90,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     protected $hrxOrderFactory;
     protected $hrxApi;
     protected $_resource;
+    protected $orderRepository;
 
     /**
      * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
@@ -141,6 +142,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             HrxWarehouseFactory $hrxWarehouseFactory,
             HrxApi $hrxApi,
             \Magento\Framework\App\ResourceConnection $resource,
+            \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
             array $data = []
     ) {
         $this->_checkoutSession = $checkoutSession;
@@ -153,6 +155,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $this->hrxOrderFactory = $hrxOrderFactory;
         $this->hrxWarehouseFactory = $hrxWarehouseFactory;
         $this->hrxApi = $hrxApi;
+        $this->orderRepository = $orderRepository;
         parent::__construct(
                 $scopeConfig,
                 $rateErrorFactory,
@@ -184,6 +187,12 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
      */
     public function collectRates(RateRequest $request) {
         if (!$this->getConfigFlag('active')) {
+            return false;
+        }
+        
+        $countries = $this->getCode('country');
+        $country_id = $this->_checkoutSession->getQuote()->getShippingAddress()->getCountryId();
+        if ($country_id && !isset($countries[$country_id])) {
             return false;
         }
 
@@ -252,6 +261,14 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             $codes['terminal'] = $this->getTerminals();
         }
 
+        if ($type == 'warehouse') {
+            $warehouses = $this->getWarehouses();
+            $codes['warehouse'] = [];
+            foreach ($warehouses as $warehouse) {
+                $codes['warehouse'][$warehouse['warehouse_id']] = $warehouse['name'];
+            }
+        }
+
 
         if (!isset($codes[$type])) {
             return false;
@@ -272,6 +289,25 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         if ($terminal) {
             $parcel_terminal_address = $terminal->getAddress() . ', ' . $terminal->getCity() . ', ' . $terminal->getCountry();
             return $parcel_terminal_address;
+        }
+        return '';
+    }
+
+    public function getTerminal($terminal_id) {
+        $hrxTerminalFactory = $this->hrxTerminalFactory->create();
+        $terminal = $hrxTerminalFactory->load($terminal_id, 'terminal_id');
+        if ($terminal) {
+            return $terminal;
+        }
+        return null;
+    }
+
+    public function getWarehouseAddress($warehouse_id) {
+        $hrxWarehouseFactory = $this->hrxWarehouseFactory->create();
+        $warehouse = $hrxWarehouseFactory->load($warehouse_id, 'warehouse_id');
+        if ($warehouse) {
+            $address = $warehouse->getName() . ', ' . $warehouse->getAddress() . ', ' . $warehouse->getCity() . ', ' . $warehouse->getCountry();
+            return $address;
         }
         return '';
     }
@@ -344,6 +380,10 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
     public function getTerminals($countryCode = null) {
         $terminals = array();
+        $countries = $this->getCode('country');
+        if ($countryCode && !isset($countries[$countryCode])) {
+            return $terminals;
+        }
         //$this->updateWarehouses();
         if ($countryCode) {
             $collection = $this->hrxTerminalFactory->create()->getCollection()->addFieldToFilter('country', array('eq' => $countryCode));
@@ -360,12 +400,26 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         return $terminals;
     }
 
+    public function getWarehouses() {
+        $warehouses = array();
+        $collection = $this->hrxWarehouseFactory->create()->getCollection();
+        
+        if (count($collection) == 0) {
+            $this->updateWarehouses();
+        }
+		foreach($collection as $item){
+			$warehouses[] = $item->getData();
+		}
+        return $warehouses;
+    }
+
     /**
      * Get tracking
      *
      * @param string|string[] $trackings
      * @return Result|null
      */
+    
     public function getTracking($trackings) {
 
         $result = $this->_trackFactory->create();
@@ -380,37 +434,30 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         return $result;
     }
 
-    protected function getReferenceNumber($order_number) {
-        $order_number = (string) $order_number;
-        $kaal = array(7, 3, 1);
-        $sl = $st = strlen($order_number);
-        $total = 0;
-        while ($sl > 0 and substr($order_number, --$sl, 1) >= '0') {
-            $total += substr($order_number, ($st - 1) - $sl, 1) * $kaal[($sl % 3)];
+    public function getTrackingInfo($tracking) {
+        $trackingInfo = [];
+        $order = $this->getHrxOrderByTracking($tracking);
+        if ($order) {
+            $trackingInfo['title'] = $order->getTracking();
+            $trackingInfo['number'] = $order->getTrackingUrl();
         }
-        $kontrollnr = ((ceil(($total / 10)) * 10) - $total);
-        return $order_number . $kontrollnr;
+        return $trackingInfo;
     }
 
     /**
      * Receive tracking number and labels.
      *
-     * @param Array $barcodes
+     * @param $hrx_order
      * @return \Magento\Framework\DataObject
      */
-    protected function _getShipmentLabels($barcodes) {
+    protected function _getShipmentLabels($hrx_order) {
 
         $result = new \Magento\Framework\DataObject();
         try {
-            $username = $this->getConfigData('account');
-            $password = $this->getConfigData('password');
-
-            $label = new Label();
-            $label->setAuth($username, $password);
-            $labels = $label->downloadLabels($barcodes, false, 'S');
-            if ($labels) {
-                $result->setShippingLabelContent($labels);
-                $result->setTrackingNumber(is_array($barcodes) ? $barcodes[0] : $barcodes);
+            $sticker = $this->getLabel($hrx_order);
+            if (isset($sticker['file_content'])) {
+                $result->setShippingLabelContent($sticker['file_content']);
+                $result->setTrackingNumber($hrx_order->getTracking());
             } else {
                 $result->setErrors(sprintf(__('Labels not received for barcodes: %s'), implode(', ', $barcodes)));
             }
@@ -421,22 +468,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     }
     
     public function getLabels($barcodes) {
-        try {
-            $username = $this->getConfigData('account');
-            $password = $this->getConfigData('password');
 
-            $label = new Label();
-            $label->setAuth($username, $password);
-            $combine = $this->getConfigData('combine_labels');
-            $labels = $label->downloadLabels($barcodes, $combine, 'I');
-            if ($labels) {
-                
-            } else {
-                
-            }
-        } catch (\Exception $e) {
-            
-        }
     }
 
     /**
@@ -453,154 +485,12 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
         try {
             $order = $request->getOrderShipment()->getOrder();
-            $username = $this->getConfigData('account');
-            $password = $this->getConfigData('password');
+            $hrx_order = $this->getHrxOrder($order);
 
-            $name = $this->getConfigData('cod_company');
-            $phone = $this->getConfigData('company_phone');
-            $street = $this->getConfigData('company_address');
-            $postcode = $this->getConfigData('company_postcode');
-            $city = $this->getConfigData('company_city');
-            $country = $this->getConfigData('company_countrycode');
-            $bank_account = $this->getConfigData('cod_bank_account');
-
-            $payment_method = $order->getPayment()->getMethodInstance()->getCode();
-            $is_cod = $payment_method == 'msp_cashondelivery';
-
-            $send_method_name = trim($request->getShippingMethod());
-            $pickup_method = $this->getConfigData('pickup');
-            
-            $send_method = 'c';
-            if (strtolower($send_method_name) == 'parcel_terminal') {
-                $send_method = 'pt';
-            } else if (strtolower($send_method_name) == 'courier_plus') {
-                $send_method = 'cp';
-            }
-            
-            $service = $this->shipping_helper->getShippingService($this, $send_method, $order);
-            
-            //in case cannot get correct service
-            if ($service === false || is_array($service)) {
-                switch ($pickup_method . ' ' . $send_method_name) {
-                    case 'COURIER parcel_terminal':
-                        $service = "PU";
-                        break;
-                    case 'COURIER COURIER':
-                        $service = "QH";
-                        break;
-                    case 'parcel_terminal COURIER':
-                        $service = "PK";
-                        break;
-                    case 'parcel_terminal parcel_terminal':
-                        $service = "PA";
-                        break;
-                    default:
-                        $service = "";
-                        break;
-                }
-            }
-
-
-
-            $shipment = new Shipment();
-            /*
-              $shipment
-              ->setComment('Test comment')
-              ->setShowReturnCodeEmail(true);
-             */
-            $shipmentHeader = new ShipmentHeader();
-            $shipmentHeader
-                    ->setSenderCd($username)
-                    ->setFileId(date('Ymdhis'));
-            $shipment->setShipmentHeader($shipmentHeader);
-
-            $package = new Package();
-            $package
-                    ->setId($order->getId())
-                    ->setService($service);
-            
-            $additionalServices = [];
-            if ($service == "PA" || $service == "PU") {
-                $additionalServices[] = (new AdditionalService())->setServiceCode('ST');
-                if ($is_cod) {
-                    $additionalServices[] = (new AdditionalService())->setServiceCode('BP');
-                }
-            }
-            
-            $_orderServices = json_decode($order->getHrxServices(), true);
-            if (isset($_orderServices['services']) && is_array($_orderServices['services'])) {
-                foreach ($_orderServices['services'] as $_service) {
-                    $additionalServices[] = (new AdditionalService())->setServiceCode($_service);
-                }
-            }
-            
-            $package->setAdditionalServices($additionalServices);
-
-            $measures = new Measures();
-            $measures
-                    ->setWeight($request->getPackageWeight());
-            /*
-              ->setVolume(9)
-              ->setHeight(2)
-              ->setWidth(3); */
-            $package->setMeasures($measures);
-
-            //set COD
-            if ($is_cod) {
-                $cod = new Cod();
-                $cod
-                        ->setAmount(round($request->getOrderShipment()->getOrder()->getGrandTotal(), 2))
-                        ->setBankAccount($bank_account)
-                        ->setReceiverName($name)
-                        ->setReferenceNumber($this->getReferenceNumber($order->getId()));
-                $package->setCod($cod);
-            }
-            // Receiver contact data
-            $receiverContact = new Contact();
-            $address = new Address();
-            $address
-                    ->setCountry($request->getRecipientAddressCountryCode())
-                    ->setPostcode($request->getRecipientAddressPostalCode())
-                    ->setDeliverypoint($request->getRecipientAddressCity())
-                    ->setStreet($request->getRecipientAddressStreet1());
-            if ($send_method_name === 'parcel_terminal') {
-                $address->setOffloadPostcode($order->getShippingAddress()->getHrxParcelTerminal());
-            }
-
-            $receiverContact
-                    ->setAddress($address)
-                    ->setMobile($request->getRecipientContactPhoneNumber())
-                    ->setPersonName($request->getRecipientContactPersonName());
-            $package->setReceiverContact($receiverContact);
-
-            // Sender contact data
-            $sender_address = new Address();
-            $sender_address
-                    ->setCountry($country)
-                    ->setPostcode($postcode)
-                    ->setDeliverypoint($city)
-                    ->setStreet($street);
-            $senderContact = new Contact();
-            $senderContact
-                    ->setAddress($sender_address)
-                    ->setMobile($phone)
-                    ->setPersonName($name);
-            $package->setSenderContact($senderContact);
-
-            // Simulate multi-package request.
-            $shipment->setPackages([$package]);
-
-            //set auth data
-            $shipment->setAuth($username, $password);
-
-            $shipment_result = $shipment->registerShipment();
-            if (isset($shipment_result['barcodes'])) {
-                foreach ($shipment_result['barcodes'] as $_barcode) {
-                    $this->createLabelHistory($order, $_barcode, $service);
-                }
-                return $this->_getShipmentLabels($shipment_result['barcodes']);
+            if ($hrx_order->getTracking()) {
+                return $this->_getShipmentLabels($hrx_order);
             } else {
-                $result->setErrors(__('No saved barcodes received'));
+                $result->setErrors(__('No tracking numbers received'));
             }
         } catch (HrxException $e) {
             $result->setErrors($e->getMessage());
@@ -650,13 +540,49 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     
     public function createHrxOrder($order) {
         try {
-            $model = $this->labelhistoryFactory->create();
+            $shippingAddress = $order->getShippingAddress();
+            $model = $this->hrxOrderFactory->create();
             $data = [
-                'shop_order_id' => $order->getId(),
+                'order_id' => $order->getId(),
+                'width' => $this->getConfigData('default_width'),
+                'height' => $this->getConfigData('default_height'),
+                'length' => $this->getConfigData('default_length'),
+                'weight' => $this->getConfigData('default_weight'),
+                'status' => 'new',
+                'hrx_terminal_id' => $shippingAddress->getHrxParcelTerminal(),
+                'hrx_warehouse_id' => $this->getConfigData('default_warehouse'),
             ];
             $model->setData($data);
             $model->save();
-            return true;
+            return $model;
+        } catch (\Exception $e) {
+            
+        }
+        return false;
+    }
+    
+    public function getHrxOrder($order) {
+        try {
+            $model = $this->hrxOrderFactory->create();
+            $model->load($order->getId(), 'order_id');
+            if ($model->getId()){
+                return $model;
+            }
+            $model = $this->createHrxOrder($order);
+            return $model;
+        } catch (\Exception $e) {
+            
+        }
+        return false;
+    }
+    
+    public function getHrxOrderByTracking($tracking) {
+        try {
+            $model = $this->hrxOrderFactory->create();
+            $model->load($tracking, 'tracking');
+            if ($model->getId()){
+                return $model;
+            }
         } catch (\Exception $e) {
             
         }
@@ -666,6 +592,31 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     public function getAllowedMethods() {
         $arr = ['parcel_terminal'];
         return $arr;
+    }
+
+    public function getOrder($order_id) {
+        return $this->orderRepository->get($order_id);
+    }
+
+    public function createHrxShipment($hrx_order, $order) {
+        $terminal = $this->getTerminal($hrx_order->getHrxTerminalId());
+        $this->hrxApi->createShipment($hrx_order, $order, $terminal);
+    }
+
+    public function getLabel($hrx_order) {
+        return $this->hrxApi->getLabel($hrx_order);
+    }
+
+    public function getHrxApiOrder($hrx_order) {
+        return $this->hrxApi->getOrder($hrx_order);
+    }
+
+    public function getReturnLabel($hrx_order) {
+        return $this->hrxApi->getReturnLabel($hrx_order);
+    }
+
+    public function cancelOrder($hrx_order) {
+        return $this->hrxApi->cancelOrder($hrx_order);
     }
 
 }

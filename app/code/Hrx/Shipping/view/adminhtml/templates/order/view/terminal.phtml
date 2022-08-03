@@ -16,7 +16,7 @@ if (($this->blockIsVisible())) {
             ?>
             <?php $locs = $this->getTerminals($this->getOrder()); ?>
             <?php $current_terminal = $this->getCurrentTerminal(); ?>
-            <select name = "order[hrx_pickup_point]" id = "hrx_parcel_terminal_list" data-url = '<?= $this->getUrl('hrx/order/UpdateTerminal') ?>' data-order = '<?= $this->getOrder()->getId(); ?>' style = "display: inline; height: 32px;">
+            <select name = "order[hrx_pickup_point]" id = "hrx_parcel_terminal_list" data-url = '<?= $this->getUrl('hrx/order/UpdateTerminal') ?>' data-order = '<?= $this->getOrder()->getId(); ?>' style = "display: inline; height: 32px;" <?php echo $this->isReadOnly()?'disabled':'';?>>
                 <option value = ""><?php echo __('Select parcel terminal');?></option>
                 <?php
                 $grouped_options = array();
@@ -39,7 +39,10 @@ if (($this->blockIsVisible())) {
                 ?>
             </select>   
             <?php
-            echo $button;
+            
+            if (!$this->isReadOnly()) {
+                echo $button;
+            }
             echo '</div>';
         }
     }
