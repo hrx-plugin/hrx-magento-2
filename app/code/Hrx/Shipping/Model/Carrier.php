@@ -196,6 +196,27 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             return false;
         }
 
+        
+        $maxWeight = $this->getConfigData('max_package_weight');
+        if($request->getPackageWeight() > $maxWeight) {
+            return false;
+        }
+
+        $amount = $this->getConfigData('price');
+        $ranges = (array)json_decode($this->getConfigData('ranges'));
+        if (is_array($ranges)) {
+            foreach ($ranges as $range) {
+                if (
+                    in_array($country_id, $range->countries) && 
+                    (float)$range->weight_from < $request->getPackageWeight() && 
+                    $request->getPackageWeight() <= (float)$range->weight_to
+                ){
+                    $amount = (float)$range->price;
+                    break;
+                }
+            }
+        }
+
         $result = $this->_rateFactory->create();
         //$packageValue = $request->getBaseCurrency()->convert($request->getPackageValueWithDiscount(), $request->getPackageCurrency());
         $packageValue = $request->getPackageValueWithDiscount();
@@ -209,8 +230,8 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
         $method->setMethod('parcel_terminal');
         $method->setMethodTitle(__('Parcel terminal'));
-        $amount = $this->getConfigData('price');
-        $freeFrom = $this->getConfigData('free_shipping_subtotal');
+        
+        $freeFrom = $this->getConfigData('free_shipping_from');
               
         if ($isFreeEnabled && $packageValue >= $freeFrom) {
             $amount = 0;
