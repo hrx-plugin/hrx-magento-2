@@ -65,6 +65,14 @@ class Order extends \Magento\Framework\View\Element\Template
         return $order->getId() ?? 0;
     }
 
+    public function isTerminal() {
+        $shipping_method = $this->getOrder()->getShippingMethod();
+        if ($shipping_method == 'hrx_parcel_terminal') {
+            return true;
+        } 
+        return false;
+    }
+
     public function getOrderNumber()
     {
         $order = $this->getOrder();

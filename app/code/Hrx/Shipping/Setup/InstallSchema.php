@@ -206,6 +206,123 @@ class InstallSchema implements InstallSchemaInterface
 
         }
 
+        if (!$installer->tableExists('hrx_locations')) {
+            $table = $installer->getConnection()->newTable(
+                            $installer->getTable('hrx_locations')
+                    )
+                    ->addColumn(
+                            'id',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                            null,
+                            [
+                                'identity' => true,
+                                'nullable' => false,
+                                'primary' => true,
+                                'unsigned' => true,
+                            ],
+                            'ID'
+                    )
+                    ->addColumn(
+                            'country',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            2,
+                            ['nullable => true'],
+                            'Country'
+                    )
+                    ->addColumn(
+                            'phone_prefix',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            10,
+                            ['nullable => true'],
+                            'Phone prefix'
+                    )
+                    ->addColumn(
+                            'phone_regex',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+                            20,
+                            ['nullable => true'],
+                            'Phone regex'
+                    )
+                    ->addColumn(
+                            'min_length',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Min length'
+                    )
+                    ->addColumn(
+                            'max_length',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Max length'
+                    )
+                    ->addColumn(
+                            'min_height',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Min height'
+                    )
+                    ->addColumn(
+                            'max_height',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Max height'
+                    )
+                    ->addColumn(
+                            'min_width',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Min width'
+                    )
+                    ->addColumn(
+                            'max_width',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Max width'
+                    )
+                    ->addColumn(
+                            'min_weight',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Min weight'
+                    )
+                    ->addColumn(
+                            'max_weight',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+                            '10,2',
+                            ['nullable => true'],
+                            'Max weight'
+                    )
+                    ->addColumn(
+                            'active',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_BOOLEAN,
+                            1,
+                            ['default' => 0],
+                            'Active'
+                    )
+                    ->addColumn(
+                            'created_at',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
+                            null,
+                            ['nullable' => false, 'default' => \Magento\Framework\DB\Ddl\Table::TIMESTAMP_INIT],
+                            'Created At'
+                    )->addColumn(
+                            'updated_at',
+                            \Magento\Framework\DB\Ddl\Table::TYPE_TIMESTAMP,
+                            null,
+                            ['nullable' => false, 'default' => \Magento\Framework\DB\Ddl\Table::TIMESTAMP_INIT_UPDATE],
+                            'Updated At')
+                    ->setComment('HRX locations');
+            $installer->getConnection()->createTable($table);
+
+        }
+
         if (!$installer->tableExists('hrx_warehouses')) {
             $table = $installer->getConnection()->newTable(
                             $installer->getTable('hrx_warehouses')

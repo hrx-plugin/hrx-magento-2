@@ -17,6 +17,7 @@ use Magento\Shipping\Model\Tracking\Result as TrackingResult;
 
 use Hrx\Shipping\Model\HrxOrderFactory;
 use Hrx\Shipping\Model\HrxTerminalFactory;
+use Hrx\Shipping\Model\HrxLocationFactory;
 use Hrx\Shipping\Model\HrxWarehouseFactory;
 use Hrx\Shipping\Model\Helper\HrxApi;
 
@@ -87,6 +88,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
     protected $hrxWarehouseFactory;
     protected $hrxTerminalFactory;
+    protected $hrxLocationFactory;
     protected $hrxOrderFactory;
     protected $hrxApi;
     protected $_resource;
@@ -138,6 +140,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             \Magento\Checkout\Model\Session $checkoutSession,
             \Magento\Variable\Model\VariableFactory $variableFactory,
             HrxTerminalFactory $hrxTerminalFactory,
+            HrxLocationFactory $hrxLocationFactory,
             HrxOrderFactory $hrxOrderFactory,
             HrxWarehouseFactory $hrxWarehouseFactory,
             HrxApi $hrxApi,
@@ -152,6 +155,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $this->variableFactory = $variableFactory;
 
         $this->hrxTerminalFactory = $hrxTerminalFactory;
+        $this->hrxLocationFactory = $hrxLocationFactory;
         $this->hrxOrderFactory = $hrxOrderFactory;
         $this->hrxWarehouseFactory = $hrxWarehouseFactory;
         $this->hrxApi = $hrxApi;
@@ -192,9 +196,8 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         
         $countries = $this->getCode('country');
         $country_id = $this->_checkoutSession->getQuote()->getShippingAddress()->getCountryId();
-        if ($country_id && !isset($countries[$country_id])) {
-            return false;
-        }
+        
+        
 
         
         $maxWeight = $this->getConfigData('max_package_weight');
@@ -203,7 +206,10 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         }
 
         $amount = $this->getConfigData('price');
+        $courier_amount = $this->getConfigData('courier_price');
         $ranges = (array)json_decode($this->getConfigData('ranges'));
+        $courier_ranges = (array)json_decode($this->getConfigData('courier_ranges'));
+        //terminal ranges
         if (is_array($ranges)) {
             foreach ($ranges as $range) {
                 if (
@@ -216,6 +222,19 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
                 }
             }
         }
+        //courier ranges
+        if (is_array($courier_ranges)) {
+            foreach ($ranges as $range) {
+                if (
+                    in_array($country_id, $range->countries) && 
+                    (float)$range->weight_from < $request->getPackageWeight() && 
+                    $request->getPackageWeight() <= (float)$range->weight_to
+                ){
+                    $courier_amount = (float)$range->price;
+                    break;
+                }
+            }
+        }
 
         $result = $this->_rateFactory->create();
         //$packageValue = $request->getBaseCurrency()->convert($request->getPackageValueWithDiscount(), $request->getPackageCurrency());
@@ -223,23 +242,44 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
         $isFreeEnabled = $this->getConfigData('free_shipping_enable');
         
-        $method = $this->_rateMethodFactory->create();
+        //terminal method
+        if ($country_id && isset($countries[$country_id])) {
+            $method = $this->_rateMethodFactory->create();
 
-        $method->setCarrier('hrx');
-        $method->setCarrierTitle($this->getConfigData('title'));
+            $method->setCarrier('hrx');
+            $method->setCarrierTitle($this->getConfigData('title'));
 
-        $method->setMethod('parcel_terminal');
-        $method->setMethodTitle(__('Parcel terminal'));
-        
-        $freeFrom = $this->getConfigData('free_shipping_from');
-              
-        if ($isFreeEnabled && $packageValue >= $freeFrom) {
-            $amount = 0;
+            $method->setMethod('parcel_terminal');
+            $method->setMethodTitle(__('Parcel terminal'));
+            
+            $freeFrom = $this->getConfigData('free_shipping_from');
+                
+            if ($isFreeEnabled && $packageValue >= $freeFrom) {
+                $amount = 0;
+            }
+            $method->setPrice($amount);
+            $method->setCost($amount);
+            $result->append($method);
         }
-        $method->setPrice($amount);
-        $method->setCost($amount);
+        //courier method
+        if ($country_id && $this->hasLocation($country_id)) {
+            $method = $this->_rateMethodFactory->create();
 
-        $result->append($method);
+            $method->setCarrier('hrx');
+            $method->setCarrierTitle($this->getConfigData('title'));
+
+            $method->setMethod('courier');
+            $method->setMethodTitle(__('Courier'));
+            
+            $freeFrom = $this->getConfigData('free_shipping_from');
+                
+            if ($isFreeEnabled && $packageValue >= $freeFrom) {
+                $courier_amount = 0;
+            }
+            $method->setPrice($courier_amount);
+            $method->setCost($courier_amount);
+            $result->append($method);
+        }
         
         return $result;
     }
@@ -307,11 +347,11 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
     public function getTerminalAddress($terminal_id) {
         $hrxTerminalFactory = $this->hrxTerminalFactory->create();
         $terminal = $hrxTerminalFactory->load($terminal_id, 'terminal_id');
-        if ($terminal) {
+        if ($terminal && $terminal->getId()) {
             $parcel_terminal_address = $terminal->getAddress() . ', ' . $terminal->getCity() . ', ' . $terminal->getCountry();
             return $parcel_terminal_address;
         }
-        return '';
+        return '-';
     }
 
     public function getTerminal($terminal_id) {
@@ -333,7 +373,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         return '';
     }
 
-    private function updateParcelTerminals() {
+    public function updateParcelTerminals() {
         $terminals = $this->hrxApi->getTerminals();
         $connection = $this->_resource->getConnection();
         $table = $connection->getTableName('hrx_terminals');
@@ -350,6 +390,34 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
             $terminal_->setAddress($terminal['address']);
             $terminal_->setLatitude($terminal['latitude']);
             $terminal_->setLongitude($terminal['longitude']);
+            $terminal_->setMaxWidth($terminal['max_width_cm']);
+            $terminal_->setMaxLength($terminal['max_length_cm']);
+            $terminal_->setMaxHeight($terminal['max_height_cm']);
+            $terminal_->setMaxWeight($terminal['max_weight_kg']);
+            $terminal_->setMinWidth($terminal['min_width_cm']);
+            $terminal_->setMinLength($terminal['min_length_cm']);
+            $terminal_->setMinHeight($terminal['min_height_cm']);
+            $terminal_->setMinWeight($terminal['min_weight_kg']);
+            $terminal_->setPhonePrefix($terminal['recipient_phone_prefix']);
+            $terminal_->setPhoneRegex($terminal['recipient_phone_regexp']);
+            $terminal_->save();
+        }
+        
+        $query = "DELETE FROM `" . $table . "` WHERE `active`= '0'";
+        $connection->query($query);
+    }
+
+    public function updateLocations() {
+        $terminals = $this->hrxApi->getLocations();
+        $connection = $this->_resource->getConnection();
+        $table = $connection->getTableName('hrx_locations');
+        $query = "UPDATE `" . $table . "` SET `active`= '0'";
+        $connection->query($query);
+        foreach ($terminals as $terminal) {
+            $hrxLocationFactory = $this->hrxLocationFactory->create();
+            $terminal_ = $hrxLocationFactory->load($terminal['country'], 'country');
+            $terminal_->setActive(1);
+            $terminal_->setCountry($terminal['country']);
             $terminal_->setMaxWidth($terminal['max_width_cm']);
             $terminal_->setMaxLength($terminal['max_length_cm']);
             $terminal_->setMaxHeight($terminal['max_height_cm']);
@@ -405,20 +473,43 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         if ($countryCode && !isset($countries[$countryCode])) {
             return $terminals;
         }
-        //$this->updateWarehouses();
+
+        $collection = $this->hrxTerminalFactory->create()->getCollection();
+        if (count($collection) == 0) {
+            $this->updateParcelTerminals();
+        }
+
         if ($countryCode) {
             $collection = $this->hrxTerminalFactory->create()->getCollection()->addFieldToFilter('country', array('eq' => $countryCode));
         } else {
             $collection = $this->hrxTerminalFactory->create()->getCollection();
         }
         
-        if (count($collection) == 0) {
-            $this->updateParcelTerminals();
-        }
 		foreach($collection as $item){
 			$terminals[] = $item->getData();
 		}
         return $terminals;
+    }
+
+    public function hasLocation($countryCode) {
+        $collection = $this->hrxLocationFactory->create()->getCollection();
+        if (count($collection) == 0) {
+            $this->updateLocations();
+        }
+        $collection = $this->hrxLocationFactory->create()->getCollection()->addFieldToFilter('country', array('eq' => $countryCode));
+        if (count($collection) > 0) {
+            return true;
+        }
+		return false;
+    }
+
+    public function getLocation($countryCode) {
+        $collection = $this->hrxLocationFactory->create()->getCollection();
+        if (count($collection) == 0) {
+            $this->updateLocations();
+        }
+        $item = $this->hrxLocationFactory->create()->getCollection()->addFieldToFilter('country', array('eq' => $countryCode))->getFirstItem();
+        return $item;
     }
 
     public function getWarehouses() {
@@ -621,7 +712,8 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
     public function createHrxShipment($hrx_order, $order) {
         $terminal = $this->getTerminal($hrx_order->getHrxTerminalId());
-        $this->hrxApi->createShipment($hrx_order, $order, $terminal);
+        $location = $this->getLocation($order->getShippingAddress()->getCountryId());
+        $this->hrxApi->createShipment($hrx_order, $order, $terminal, $location);
     }
 
     public function getLabel($hrx_order) {

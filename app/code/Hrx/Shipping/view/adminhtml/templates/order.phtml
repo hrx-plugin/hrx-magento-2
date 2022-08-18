@@ -4,12 +4,14 @@
     <form class = "hrx-order-form" id = "hrx-order-form" method = "post">
         <input name="form_key" type="hidden" value="<?php echo $this->getFormKey();?>">
         <input type = "hidden" name = "order_id" value = "<?php echo $this->getOrderId(); ?>"/>
+        <?php if ($this->isTerminal()): ?>
         <div class = "hrx-form-row">
             <label for = "parcel_terminal"><?php echo __('Parcel terminal'); ?></label>
             <select name = "terminal_id" id = "parcel_terminal" <?php $this->inputDisabled(); ?>>
                 <?php echo $this->terminalOptions(); ?>
             </select>
         </div>
+        <?php endif; ?>
         <div class = "hrx-form-row">
             <label for = "warehouse"><?php echo __('Warehouse'); ?></label>
             <select name = "warehouse_id" id = "warehouse" <?php $this->inputDisabled(); ?>>

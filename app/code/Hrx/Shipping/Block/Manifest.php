@@ -55,6 +55,16 @@ class Manifest extends \Magento\Framework\View\Element\Template
         }
         return $order->getTracking();
     }
+
+    public function getDeliveryType($order) {
+        $shipping_method = $order->getShippingMethod();
+        if ($shipping_method == 'hrx_parcel_terminal') {
+            return 'Terminal';
+        } else if ($shipping_method == 'hrx_courier') {
+            return 'Courier';
+        }
+        return '-';
+    }
     
     public function getTerminal($order) {
         $parcel_terminal = $this->hrxCarrier->getTerminalAddress($order->getHrxTerminalId());

@@ -41,6 +41,7 @@ class Save extends \Magento\Backend\App\Action implements HttpPostActionInterfac
             if ($order_id) {
               $model->load($order_id, 'order_id');
               if ($model->getId()){
+                $order = $this->orderRepository->get($order_id);
                 $old_data = $model->getData();
                 $data = [
                   'hrx_terminal_id' => $this->getRequest()->getParam('terminal_id'),
@@ -52,21 +53,27 @@ class Save extends \Magento\Backend\App\Action implements HttpPostActionInterfac
                 ];
                 $model->setData(array_merge($old_data , $data));
 
-                $terminal = $this->hrxCarrier->getTerminal($model->getHrxTerminalId());
+                if ($order->getShippingMethod() == 'hrx_courier') {
+                  $terminal = $this->hrxCarrier->getLocation($order->getShippingAddress()->getCountryId());
+                } else {
+                  $terminal = $this->hrxCarrier->getTerminal($model->getHrxTerminalId());
+                }
                 if ($terminal->getId()) {
                   $measurement_errors = [];
-                  if ($model->getWeight() < $terminal->getMinWeight() || $model->getWeight() > $terminal->getMaxWeight()) {
-                      $errors[] = "Weight must be between: " . $terminal->getMinWeight() . ' - ' . $terminal->getMaxWeight();
-                  }
-                  if ($model->getWidth() < $terminal->getMinWidth() || $model->getWidth() > $terminal->getMaxWidth()) {
-                      $errors[] = "Width must be between: " . $terminal->getMinWidth() . ' - ' . $terminal->getMaxWidth();
-                  }
-                  if ($model->getHeight() < $terminal->getMinHeight() || $model->getHeight() > $terminal->getMaxHeight()) {
-                      $errors[] = "Height must be between: " . $terminal->getMinHeight(). ' - ' . $terminal->getMaxHeight();
-                  }
-                  
-                  if ($model->getLength() < $terminal->getMinLength() || $model->getLength() > $terminal->getMaxLength()) {
-                      $errors[] = "Length must be between: " . $terminal->getMinLength() . ' - ' . $terminal->getMaxLength();
+                  if ($terminal->getMinWeight() != null) {
+                    if ($model->getWeight() < $terminal->getMinWeight() || $model->getWeight() > $terminal->getMaxWeight()) {
+                        $errors[] = "Weight must be between: " . $terminal->getMinWeight() . ' - ' . $terminal->getMaxWeight();
+                    }
+                    if ($model->getWidth() < $terminal->getMinWidth() || $model->getWidth() > $terminal->getMaxWidth()) {
+                        $errors[] = "Width must be between: " . $terminal->getMinWidth() . ' - ' . $terminal->getMaxWidth();
+                    }
+                    if ($model->getHeight() < $terminal->getMinHeight() || $model->getHeight() > $terminal->getMaxHeight()) {
+                        $errors[] = "Height must be between: " . $terminal->getMinHeight(). ' - ' . $terminal->getMaxHeight();
+                    }
+                    
+                    if ($model->getLength() < $terminal->getMinLength() || $model->getLength() > $terminal->getMaxLength()) {
+                        $errors[] = "Length must be between: " . $terminal->getMinLength() . ' - ' . $terminal->getMaxLength();
+                    }
                   }
                   if (!empty($errors)) {
                       return $resultJson->setData([
@@ -77,8 +84,7 @@ class Save extends \Magento\Backend\App\Action implements HttpPostActionInterfac
                 }
                 $model->save();
 
-                $order = $this->orderRepository->get($order_id);
-                if ($order) {
+                if ($order && $data['hrx_terminal_id']) {
                   $shippingAddress = $order->getShippingAddress();
                   $shippingAddress->setHrxParcelTerminal($data['hrx_terminal_id']);
                   $shippingAddress->save();

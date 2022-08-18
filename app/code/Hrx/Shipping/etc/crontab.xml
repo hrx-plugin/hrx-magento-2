@@ -4,5 +4,14 @@
 		<job instance="Hrx\Shipping\Cron\OrderCheck" method="execute" name="hrx_shipping_order_check">
 			<schedule>* * * * *</schedule>
 		</job>
+		<job instance="Hrx\Shipping\Cron\WarehouseUpdate" method="execute" name="hrx_shipping_warehouse_update">
+			<schedule>*/30 * * * *</schedule>
+		</job>
+		<job instance="Hrx\Shipping\Cron\TerminalsUpdate" method="execute" name="hrx_shipping_terminals_update">
+			<schedule>0 5 * * *</schedule>
+		</job>
+		<job instance="Hrx\Shipping\Cron\LocationsUpdate" method="execute" name="hrx_shipping_locations_update">
+			<schedule>0 6 * * *</schedule>
+		</job>
 	</group>
 </config>

@@ -52,6 +52,16 @@ class HrxApi {
         return $terminals;
     }
 
+    public function getLocations() {
+        $terminals = [];
+        try {
+            $terminals = $this->api->getCourierDeliveryLocations();
+        } catch (\Throwable $e) {
+            $this->logger->debug($e->getMessage());
+        }
+        return $terminals;
+    }
+
     public function testCredentials() {
         try {
             $locs = $this->api->getPickupLocations(1, 1);
@@ -71,12 +81,9 @@ class HrxApi {
         return $phone;
     }
 
-    public function createShipment($hrx_order, $order, $terminal) {
+    public function createShipment($hrx_order, $order, $terminal, $location) {
         if ($hrx_order->getStatus() != 'new') {
             throw new \Exception('Incorrect order status');
-        }
-        if (!$terminal) {
-            throw new \Exception('Parcel terminal not selected');
         }
         /*** Create order ***/
         // Building receiver
@@ -84,7 +91,21 @@ class HrxApi {
         $receiver = new Receiver();
         $receiver->setName($shippingAddress->getFirstname() . ' ' .  $shippingAddress->getLastname());
         $receiver->setEmail($shippingAddress->getEmail());
-        $receiver->setPhone($this->fixNumber($shippingAddress->getTelephone(), $terminal->getPhonePrefix()), $terminal->getPhoneRegex());
+        if ($order->getShippingMethod() == 'hrx_courier') {
+            if (!$location->getId()) {
+                throw new \Exception('Delivery location not found');
+            }
+            $receiver->setPhone($this->fixNumber($shippingAddress->getTelephone(), $location->getPhonePrefix()), $location->getPhoneRegex() ?? '');
+            $receiver->setAddress(implode(', ',array_filter($shippingAddress->getStreet())))
+            ->setPostcode($shippingAddress->getPostcode())
+            ->setCity($shippingAddress->getCity()) 
+            ->setCountry($shippingAddress->getCountryId());
+        } else {
+            if (!$terminal) {
+                throw new \Exception('Parcel terminal not selected');
+            }
+            $receiver->setPhone($this->fixNumber($shippingAddress->getTelephone(), $terminal->getPhonePrefix()), $terminal->getPhoneRegex());
+        }
 
         //Building shipment
         $shipment = new Shipment();
@@ -98,9 +119,14 @@ class HrxApi {
         //Building order
         $api_order = new Order();
         $api_order->setPickupLocationId($hrx_order->getHrxWarehouseId());
-        $api_order->setDeliveryLocation($hrx_order->getHrxTerminalId());
         $api_order->setReceiver($receiver);
         $api_order->setShipment($shipment);
+        if ($order->getShippingMethod() == 'hrx_courier') {
+            $api_order->setDeliveryKind('courier');
+        } else {
+            $api_order->setDeliveryKind('delivery_location');
+            $api_order->setDeliveryLocation($hrx_order->getHrxTerminalId());
+        }
         $order_data = $api_order->prepareOrderData();
 
         //Sending order

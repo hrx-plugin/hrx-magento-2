@@ -49,6 +49,7 @@ if (count($orders)):
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><input type = "checkbox"  class = "check-all"/></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Order #'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Order status'); ?></span></th>
+                        <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Delivery type'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Parcel terminal'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Warehouse'); ?></span></th>
                         <th class = "data-grid-th"><span class="data-grid-cell-content"><?php echo __('Tracking'); ?></span></th>
@@ -68,6 +69,7 @@ if (count($orders)):
                             <td><div class = "data-grid-cell-content"><input type = "checkbox" name = "items[]" class = "manifest-item" value = "<?php echo $ids; ?>"/></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $order->getIncrementId(); ?></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $this->getStatus($hrx_order); ?></div></td>
+                            <td><div class = "data-grid-cell-content"><?php echo $this->getDeliveryType($order); ?></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $this->getTerminal($hrx_order); ?></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $this->getWarehouse($hrx_order); ?></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $this->getTracking($hrx_order); ?></div></td>
