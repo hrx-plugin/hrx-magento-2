@@ -28,7 +28,7 @@ class Manifest extends \Magento\Framework\View\Element\Template
     }
 
     public function getOrders() {
-        $collection = $this->_orderCollectionFactory->create()->addFieldToFilter('shipping_method', array('like' => 'hrx_%'))->addFieldToFilter('state', array('neq' => 'canceled'))->load();
+        $collection = $this->_orderCollectionFactory->create()->addFieldToFilter('shipping_method', array('like' => 'hrx_%'))->addFieldToFilter('state', array('neq' => 'canceled'))->setOrder('entity_id', 'DESC')->load();
         return $collection;
     }
 
@@ -43,7 +43,10 @@ class Manifest extends \Magento\Framework\View\Element\Template
     }
 
     public function getOrderEdit($order) {
-        return '<a href = "'.$this->getUrl('hrx/order') .'?order_id='. $order->getId().'" class = "hrx-edit-btn"></a> ';
+        if ($order->getStatus() != 'new' && $order->getStatus() != 'deleted' && $order->getStatus() != 'cancelled') {
+            return '<a href = "'.$this->getUrl('hrx/order') .'?order_id='. $order->getOrderId().'" class = "hrx-preview-btn"></a> ';
+        }
+        return '<a href = "'.$this->getUrl('hrx/order') .'?order_id='. $order->getOrderId().'" class = "hrx-edit-btn"></a> ';
     }
 
     public function getTracking($order) {

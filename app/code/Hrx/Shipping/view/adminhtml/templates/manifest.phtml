@@ -59,7 +59,17 @@ if (count($orders)):
                 </thead>
                 <tbody>
                     <?php $_odd = ''; ?>
+                    <?php $counter = 0; ?>
                     <?php foreach ($orders as $order): ?>
+                        <?php $counter++; ?>
+                        <?php 
+                        if ($counter <= ($current_page - 1) * $p_limit) {
+                            continue;
+                        }
+                        if ($counter > ($current_page - 1) * $p_limit + $p_limit) {
+                            break;
+                        }
+                        ?>
                         <tr class = "data-row">
                             <?php
                             $order_items = array();
@@ -74,7 +84,7 @@ if (count($orders)):
                             <td><div class = "data-grid-cell-content"><?php echo $this->getWarehouse($hrx_order); ?></div></td>
                             <td><div class = "data-grid-cell-content"><?php echo $this->getTracking($hrx_order); ?></div></td>
                             <td><div class = "data-grid-cell-content text-center"><?php echo $this->getOrderActions($hrx_order); ?></div></td>
-                            <td><div class = "data-grid-cell-content text-center"><?php echo $this->getOrderEdit($order); ?></div></td>
+                            <td><div class = "data-grid-cell-content text-center"><?php echo $this->getOrderEdit($hrx_order); ?></div></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

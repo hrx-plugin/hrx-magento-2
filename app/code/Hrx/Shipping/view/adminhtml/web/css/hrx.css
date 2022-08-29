@@ -83,6 +83,16 @@
 .hrx-edit-btn:hover {
     opacity: 0.8;
 }
+.hrx-preview-btn {
+    background: url('../images/preview.svg') no-repeat;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background-size: contain;
+}
+.hrx-preview-btn:hover {
+    opacity: 0.8;
+}
 .hrx-btn:hover {
     background: #D41816;
     color: #FFFFFF;
