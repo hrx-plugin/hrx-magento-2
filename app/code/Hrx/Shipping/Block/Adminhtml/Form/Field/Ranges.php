@@ -53,6 +53,8 @@ class Ranges extends AbstractFieldArray
             )->toHtml();
         }
 
+        $column['style'] = "width:70px;";
+
         return '<input type="number" id="' . $this->_getCellInputElementId(
             '<%- _id %>',
             $columnName
@@ -67,11 +69,8 @@ class Ranges extends AbstractFieldArray
             $column['size'] .
             '"' : '') .
             ' class="' .
-            (isset(
-            $column['class']
-        ) ? $column['class'] : 'input-text') . '"' . (isset(
-            $column['style']
-        ) ? ' style="' . $column['style'] . '"' : '') . '/>';
+            (isset($column['class']) ? $column['class'] : 'input-text') . '"' . 
+        (isset($column['style']) ? ' style="' . $column['style'] . '"' : '') . '/>';
     }
 
     /**

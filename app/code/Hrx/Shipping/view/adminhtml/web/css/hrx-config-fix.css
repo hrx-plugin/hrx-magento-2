@@ -1,0 +1,9 @@
+#carriers_hrx_courier_ranges td,
+#carriers_hrx_ranges td{
+    padding: 10px;
+}
+
+#carriers_hrx_courier_ranges td:not(:first-child),
+#carriers_hrx_ranges td:not(:first-child) {
+    padding-left: 0;
+}
