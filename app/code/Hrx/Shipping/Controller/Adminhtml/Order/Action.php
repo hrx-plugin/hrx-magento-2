@@ -5,6 +5,7 @@ namespace Hrx\Shipping\Controller\Adminhtml\Order;
 use Hrx\Shipping\Model\HrxOrderFactory;
 use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
 use \setasign\Fpdi\Fpdi;
+use Magento\Sales\Model\Order;
 
 class Action extends \Magento\Backend\App\Action implements HttpPostActionInterface
 {
@@ -48,8 +49,12 @@ class Action extends \Magento\Backend\App\Action implements HttpPostActionInterf
                 $order = $this->hrxCarrier->getOrder($model->getOrderId());
                 try {
                   if ($model->getId() && $action){
-                    if ($action == 'ready' && $model->getStatus() == 'new') {
+                    if ($action == 'ready' && ($model->getStatus() == 'new' || $model->getStatus() == 'error')) {
                       $this->hrxCarrier->createHrxShipment($model, $order);
+                      $order->setIsInProcess(true);
+                      $order->addStatusHistoryComment('Automatically SHIPPED by HRX delivery.', false);
+                      $order->setState(Order::STATE_COMPLETE)->setStatus(Order::STATE_COMPLETE);
+                      $order->save();
                     }
                     if ($action == 'label' && !in_array($model->getStatus(),['new','deleted','canceled'])) {
                       $sticker = $this->hrxCarrier->getLabel($model);

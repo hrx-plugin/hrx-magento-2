@@ -92,7 +92,8 @@ class Manifest extends \Magento\Framework\View\Element\Template
             'in_return' => 'In return',
             'returned' => 'Returned',
             'deleted' => 'Deleted',
-            'cancelled' => 'Cancelled'
+            'cancelled' => 'Cancelled',
+            'error' => 'Error',
         ];
         return $statuses[$order->getStatus()] ?? '-';
     }
