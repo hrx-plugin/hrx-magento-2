@@ -197,8 +197,9 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $countries = $this->getCode('country');
         $country_id = $this->_checkoutSession->getQuote()->getShippingAddress()->getCountryId();
         
-        
-
+        if (!$country_id) {
+            $country_id = $request->getDestCountryId();
+        }
         
         $maxWeight = $this->getConfigData('max_package_weight');
         if($request->getPackageWeight() > $maxWeight) {

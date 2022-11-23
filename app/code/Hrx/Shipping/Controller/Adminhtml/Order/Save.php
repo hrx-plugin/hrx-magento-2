@@ -3,9 +3,8 @@
 namespace Hrx\Shipping\Controller\Adminhtml\Order;
 
 use Hrx\Shipping\Model\HrxOrderFactory;
-use Magento\Framework\App\Action\HttpPostActionInterface as HttpPostActionInterface;
 
-class Save extends \Magento\Backend\App\Action implements HttpPostActionInterface
+class Save extends \Magento\Backend\App\Action 
 {
 
   protected $resultPageFactory;

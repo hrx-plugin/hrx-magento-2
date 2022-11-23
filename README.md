@@ -1,4 +1,4 @@
-# HRX delivery module for Magento 2.1 - 2.4 versions
+# HRX delivery module for Magento 2.0 - 2.4 versions
 
 ## Before installing
 
@@ -32,3 +32,7 @@ php bin/magento cache:flush
 Stores -> Configuration, select Sales -> Shipping Methods / Delivery methods -> HRX delivery
 
 Fill in all the required information.
+
+## Important, for Magento 2.0 version
+
+After install, rename file Hrx/Shipping/view/adminhtml/layout/sales_order_view.xml to Hrx/Shipping/view/adminhtml/layout/sales_order_view_.xml, due to parcel terminal displaying in Magento Order view is not supported
