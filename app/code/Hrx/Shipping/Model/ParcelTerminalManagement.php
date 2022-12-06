@@ -49,6 +49,7 @@ class ParcelTerminalManagement implements ParcelTerminalManagementInterface
                     'x' => $loc_data['longitude'],
                     'comment' => '',
                     'city' => $loc_data['city'],
+                    'country' => $loc_data['country'],
                 );
                 if (!isset($result[$loc_data['city']])) {
                     $city_object = array('name' => $loc_data['city'], 'terminals' => array());

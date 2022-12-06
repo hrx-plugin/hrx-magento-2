@@ -27,6 +27,7 @@ var hrx_last_selected_terminal = '';
                     x: $(this).attr('data-y'),
                     address: $(this).attr('data-location'),
                     city: $(this).attr('data-city'),
+                    country: $(this).attr('data-country'),
                 }
                 terminals.push(terminal);
             }
@@ -127,7 +128,6 @@ var hrx_last_selected_terminal = '';
                  // $('#hrx-search button').trigger('click')
               }
             if (selected != false){
-                //console.log('showmodal');
                 $(terminals).each(function(i,val){
                     if (selected.id == val.id){
                         zoomTo([val.x, val.y], selected.id);
@@ -145,7 +145,6 @@ var hrx_last_selected_terminal = '';
                 event.initEvent('resize', true, true);
             }
             window.dispatchEvent(event);
-            //console.log('1');
           }
 
         function searchByAddress(){
@@ -408,13 +407,18 @@ var hrx_last_selected_terminal = '';
             });
             
           
-            terminalIcon = new Icon({iconUrl: hrxdata.hrx_plugin_url+'/images/map-pin.png'});
+            terminalIcon = new Icon({iconUrl: hrxdata.hrx_plugin_url+'/images/pins/map-pin.png'});
             homeIcon = new Icon2({iconUrl: hrxdata.hrx_plugin_url+'locator_img.png'});
             
           var locations = terminals;
           
             jQuery.each( locations, function( key, location ) {
-              L.marker([location.x, location.y], {icon: terminalIcon, terminalId:location.id }).on('click',function(e){ listTerminals(locations,0,this.options.terminalId);terminalDetails(this.options.terminalId);}).addTo(map);
+                if (['LT','LV','EE','FI','PL','SE'].includes(location.country)) {
+                    terminalIcon = new Icon({iconUrl: hrxdata.hrx_plugin_url+'/images/pins/'+location.country+'.png'});
+                } else {
+                    terminalIcon = new Icon({iconUrl: hrxdata.hrx_plugin_url+'/images/pins/map-pin.png'});
+                }
+                L.marker([location.x, location.y], {icon: terminalIcon, terminalId:location.id }).on('click',function(e){ listTerminals(locations,0,this.options.terminalId);terminalDetails(this.options.terminalId);}).addTo(map);
             });
           
           //show button

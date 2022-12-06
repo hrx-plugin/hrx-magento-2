@@ -7,7 +7,7 @@
                                             " >
             <option value = "" data-bind = "i18n:'Select terminal'"></option>
             <optgroup data-bind="attr: {label: name}, foreach: terminals">
-                <option data-bind="value: id, text: name + ' (' + location +')', attr:{'data-x': x,'data-y': y,'data-comment': comment,'data-name':name,'data-location':location,'data-city':city}" ></option>
+                <option data-bind="value: id, text: name + ' (' + location +')', attr:{'data-x': x,'data-y': y,'data-comment': comment,'data-name':name,'data-location':location,'data-city':city,'data-country':country}" ></option>
             </optgroup>
         </select>
         <button type="button" class="btn btn-basic btn-sm hrx-btn show-hrx-map" style = "display: none;"><span data-bind="i18n: 'Show in map'"></span> <img data-bind="attr:{src: require.toUrl('Hrx_Shipping/css/images/map-location.svg')}"/></button>
