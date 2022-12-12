@@ -7,8 +7,11 @@
 -->
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <head>
+        <css src="Hrx_Shipping::css/terminal-mapping.css" />
         <css src="Hrx_Shipping::css/hrx.css" />
         <css src="Hrx_Shipping::css/leaflet.css" />
+        <css src_type="url" src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+        <css src_type="url" src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     </head>
     <body>
         <referenceBlock name="checkout.root">

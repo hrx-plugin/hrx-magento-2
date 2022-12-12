@@ -18,11 +18,15 @@ var config = {
         }
     },
     paths: {
-        leaflet: 'https://unpkg.com/leaflet@1.6.0/dist/leaflet'
+        leaflet: 'https://unpkg.com/leaflet@1.6.0/dist/leaflet',
+        leafletmarkercluster: 'https://unpkg.com/leaflet.markercluster@1.5.1/dist/leaflet.markercluster'
     },
     shim: {
         leaflet: {
             exports: 'L'
+        },
+        leafletmarkercluster: {
+            deps: ['leaflet']
         }
     }
 };

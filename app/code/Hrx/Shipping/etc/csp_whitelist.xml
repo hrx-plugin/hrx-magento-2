@@ -6,6 +6,11 @@
                 <value id="hrx-script-unpg" type="host">https://unpkg.com</value>
             </values>
         </policy>
+        <policy id="style-src">
+            <values>
+                <value id="hrx-style-unpg" type="host">https://unpkg.com</value>
+            </values>
+        </policy>
         <policy id="img-src">
             <values>
                 <value id="hrx-images" type="host">*.openstreetmap.org</value>

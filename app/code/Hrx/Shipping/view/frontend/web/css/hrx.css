@@ -128,7 +128,8 @@
     background-color: #555555;
     color: white;
 }
-#hrx-search-button {
+.hrxml-open-modal-btn::after {
+  content: '';
   background-image:url("images/map-search.svg");
   background-repeat: no-repeat;
   background-size: 20px 20px;
@@ -159,20 +160,20 @@
  color: #555 !important;
 }
 
-.hrx-modal-content .hrx-terminals-listing {
+.hrxml-terminal-list {
   margin: 0px; 
   padding: 14px; 
   color: black; 
   overflow-x: hidden;
   background: #F7F7F7;
 }
-.hrx-modal-content .hrx-terminals-listing li {
+.hrxml-terminal-list li {
   padding: 5px; 
   border-radius: 4px; 
   list-style-type: none;
   width: 100% !important;
 }
-.hrx-modal-content .hrx-terminals-listing li.active {
+.hrxml-terminal-list li.hrxml-active {
   background: #FFFFFF;
 }
 
@@ -194,7 +195,7 @@
   max-height: 30px;
   line-height: 20px;
   position: relative;
-  padding: 5px;
+  padding: 5px 10px;
   margin-top: 5px;
   width: 100%;
   max-width: 500px;
@@ -336,14 +337,14 @@
     margin-top:5px;
 }
 
-.hrx-scrollbar::-webkit-scrollbar-track
+.hrxml-terminal-list::-webkit-scrollbar-track
 {
     border: none;
     background-color: #F1F1F1;
     border-radius: 0px;
 }
 
-.hrx-scrollbar::-webkit-scrollbar
+.hrxml-terminal-list::-webkit-scrollbar
 {
     width: 9px;
     background-color: #F1F1F1;
@@ -351,7 +352,7 @@
     border-radius: 0px;
 }
 
-.hrx-scrollbar::-webkit-scrollbar-thumb
+.hrxml-terminal-list::-webkit-scrollbar-thumb
 {
     border: none;
     border-radius: 0px;

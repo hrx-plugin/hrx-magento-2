@@ -44,18 +44,15 @@ class ParcelTerminalManagement implements ParcelTerminalManagementInterface
                     'id' => $loc_data['terminal_id'],
                     'zip' => $loc_data['postcode'],
                     'name' => $loc_data['address'] . ', ' . $loc_data['city'] . ', ' . $loc_data['country'],
-                    'location' => $loc_data['address'],
+                    'address' => $loc_data['address'],
                     'y' => $loc_data['latitude'],
                     'x' => $loc_data['longitude'],
                     'comment' => '',
                     'city' => $loc_data['city'],
                     'country' => $loc_data['country'],
+                    'identifier' => $loc_data['country'],
                 );
-                if (!isset($result[$loc_data['city']])) {
-                    $city_object = array('name' => $loc_data['city'], 'terminals' => array());
-                    $result[$loc_data['city']] = $city_object;
-                }
-                $result[$loc_data['city']]['terminals'][] = $terminalArray;
+                $result[] = $terminalArray;
             }
         return $result;
     }
