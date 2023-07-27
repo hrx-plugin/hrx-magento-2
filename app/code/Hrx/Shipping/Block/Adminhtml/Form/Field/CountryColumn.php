@@ -46,11 +46,29 @@ class CountryColumn extends Select
     private function getSourceOptions(): array
     {
         return [
+            ['value' => 'AT', 'label' => __('Austria')],
+            ['value' => 'BE', 'label' => __('Belgium')],
+            ['value' => 'BG', 'label' => __('Bulgaria')],
+            ['value' => 'HR', 'label' => __('Croatia')],
+            ['value' => 'CZ', 'label' => __('Czech Republic')],
+            ['value' => 'DK', 'label' => __('Denmark')],
             ['value' => 'EE', 'label' => __('Estonia')],
+            ['value' => 'FI', 'label' => __('Finland')],
+            ['value' => 'FR', 'label' => __('France')],
+            ['value' => 'DE', 'label' => __('Germany')],
+            ['value' => 'GR', 'label' => __('Greece')],
+            ['value' => 'HU', 'label' => __('Hungary')],
+            ['value' => 'IE', 'label' => __('Ireland')],
+            ['value' => 'IT', 'label' => __('Italy')],
             ['value' => 'LV', 'label' => __('Latvia')],
             ['value' => 'LT', 'label' => __('Lithuania')],
+            ['value' => 'NL', 'label' => __('Netherlands')],
             ['value' => 'PL', 'label' => __('Poland')],
-            ['value' => 'FI', 'label' => __('Finland')],
+            ['value' => 'PT', 'label' => __('Portugal')],
+            ['value' => 'RO', 'label' => __('Romania')],
+            ['value' => 'SK', 'label' => __('Slovakia')],
+            ['value' => 'SI', 'label' => __('Slovenia')],
+            ['value' => 'ES', 'label' => __('Spain')],
             ['value' => 'SE', 'label' => __('Sweden')],
         ];
     }

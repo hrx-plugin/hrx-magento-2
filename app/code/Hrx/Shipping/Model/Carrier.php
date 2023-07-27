@@ -244,7 +244,7 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $isFreeEnabled = $this->getConfigData('free_shipping_enable');
         
         //terminal method
-        if ($country_id && isset($countries[$country_id])) {
+        if ($country_id && $this->hasTerminal($country_id)) {
             $method = $this->_rateMethodFactory->create();
 
             $method->setCarrier('hrx');
@@ -306,11 +306,29 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 
         $codes = [
             'country' => [
+                'AT' => __('Austria'),
+                'BE' => __('Belgium'),
+                'BG' => __('Bulgaria'),
+                'HR' => __('Croatia'),
+                'CZ' => __('Czech Republic'),
+                'DK' => __('Denmark'),
                 'EE' => __('Estonia'),
+                'FI' => __('Finland'),
+                'FR' => __('France'),
+                'DE' => __('Germany'),
+                'GR' => __('Greece'),
+                'HU' => __('Hungary'),
+                'IE' => __('Ireland'),
+                'IT' => __('Italy'),
                 'LV' => __('Latvia'),
                 'LT' => __('Lithuania'),
+                'NL' => __('Netherlands'),
                 'PL' => __('Poland'),
-                'FI' => __('Finland'),
+                'PT' => __('Portugal'),
+                'RO' => __('Romania'),
+                'SK' => __('Slovakia'),
+                'SI' => __('Slovenia'),
+                'ES' => __('Spain'),
                 'SE' => __('Sweden'),
             ],
             'tracking' => [
@@ -490,6 +508,18 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
 			$terminals[] = $item->getData();
 		}
         return $terminals;
+    }
+
+    public function hasTerminal($countryCode) {
+        $collection = $this->hrxTerminalFactory->create()->getCollection();
+        if (count($collection) == 0) {
+            $this->updateParcelTerminals();
+        }
+        $collection = $this->hrxTerminalFactory->create()->getCollection()->addFieldToFilter('country', array('eq' => $countryCode));
+        if (count($collection) > 0) {
+            return true;
+        }
+		return false;
     }
 
     public function hasLocation($countryCode) {
