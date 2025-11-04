@@ -33,13 +33,25 @@ class Manifest extends \Magento\Framework\View\Element\Template
     }
 
     public function getOrderActions($order) {
+        $buttons = [];
         if ($order->getStatus() == 'new') {
-            return '<button class = "hrx-btn btn-sm single-action" data-action = "ready" data-id = "' . $order->getOrderId() . '">'.__('Mark as ready').'</button> ';
+            $buttons[] = '<button class = "hrx-btn btn-sm single-action" data-action = "register" data-id = "' . $order->getOrderId() . '">'.__('Register').'</button> ';
         }
-        if ($order->getStatus() != 'new' && $order->getStatus() != 'deleted' && $order->getStatus() != 'cancelled') {
-            return '<button class = "hrx-btn btn-sm btn-outline single-action" data-action = "label" data-id = "' . $order->getOrderId() . '">'.__('Label').'</button> ' . 
-            '<button class = "hrx-btn btn-sm btn-outline single-action" data-action = "return_label" data-id = "' . $order->getOrderId() . '">'.__('Return label').'</button>';
+        if ($order->getStatus() == 'error') {
+            $buttons[] = '<button class = "hrx-btn btn-sm single-action" data-action = "register" data-id = "' . $order->getOrderId() . '">'.__('Try register again').'</button> ';
         }
+        if ($order->getStatus() == 'registered') {
+            $buttons[] = '<button class = "hrx-btn btn-sm single-action" data-action = "ready" data-id = "' . $order->getOrderId() . '">'.__('Ready').'</button> ';
+        }
+        if ($order->getStatus() == 'ready') {
+            //$buttons[] = '<button class = "hrx-btn btn-sm btn-outline single-action" data-action = "not_ready" data-id = "' . $order->getOrderId() . '">'.__('Unready').'</button> ';
+        }
+        if (!in_array($order->getStatus(),['new','error','deleted','canceled'])) {
+            $buttons[] = '<button class = "hrx-btn btn-sm btn-outline single-action" data-action = "label" data-id = "' . $order->getOrderId() . '">'.__('Label').'</button> ';
+            $buttons[] = '<button class = "hrx-btn btn-sm btn-outline single-action" data-action = "return_label" data-id = "' . $order->getOrderId() . '">'.__('Return label').'</button>';
+        }
+
+        return implode('', $buttons);
     }
 
     public function getOrderEdit($order) {
@@ -86,6 +98,7 @@ class Manifest extends \Magento\Framework\View\Element\Template
     public function getStatus($order) {
         $statuses = [
             'new' => 'New',
+            'registered' => 'Registered',
             'ready' => 'Ready',
             'in_delivery' => 'In delivery',
             'delivered' => 'Delivered',

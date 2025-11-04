@@ -747,6 +747,11 @@ class Carrier extends AbstractCarrierOnline implements \Magento\Shipping\Model\C
         $this->hrxApi->createShipment($hrx_order, $order, $terminal, $location);
     }
 
+    public function markAsReady($hrx_order, $mark_ready = true)
+    {
+        return $this->hrxApi->readyOrder($hrx_order, $mark_ready);
+    }
+
     public function getLabel($hrx_order) {
         return $this->hrxApi->getLabel($hrx_order);
     }

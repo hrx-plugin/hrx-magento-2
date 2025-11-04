@@ -136,7 +136,7 @@ class HrxApi {
         //var_dump($order_response); exit;
         if ( $order_id ) {
             $hrx_order->setHrxOrderId($order_id);
-            $hrx_order->setStatus('ready');
+            $hrx_order->setStatus('registered');
 
             //get newly created order to get tracking
             //get tracking number in cronjob
@@ -150,6 +150,13 @@ class HrxApi {
         } else {
             throw new \Exception('Failed to create order');
         }
+    }
+
+    public function readyOrder($hrx_order, $mark_ready = true) {
+        if ($hrx_order->getHrxOrderId()) {
+            return $this->api->changeOrderReadyState($hrx_order->getHrxOrderId(), (bool) $mark_ready);
+        }
+        return [];
     }
 
     public function getOrder($hrx_order) {

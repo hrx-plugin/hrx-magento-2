@@ -48,12 +48,19 @@ class Action extends \Magento\Backend\App\Action
                 $order = $this->hrxCarrier->getOrder($model->getOrderId());
                 try {
                   if ($model->getId() && $action){
-                    if ($action == 'ready' && ($model->getStatus() == 'new' || $model->getStatus() == 'error')) {
+                    if ($action == 'register' && ($model->getStatus() == 'new' || $model->getStatus() == 'error')) {
                       $this->hrxCarrier->createHrxShipment($model, $order);
                       $order->setIsInProcess(true);
                       $order->addStatusHistoryComment('Automatically SHIPPED by HRX delivery.', false);
                       $order->setState(Order::STATE_COMPLETE)->setStatus(Order::STATE_COMPLETE);
                       $order->save();
+                    }
+                    if ($action == 'ready' && $model->getStatus() == 'registered') {
+                      $ready = $this->hrxCarrier->markAsReady($model);
+                      if (isset($ready['status']) && $ready['status'] == 'ready') {
+                        $model->setStatus('ready');
+                        $model->save();
+                      }
                     }
                     if ($action == 'label' && !in_array($model->getStatus(),['new','deleted','canceled'])) {
                       $sticker = $this->hrxCarrier->getLabel($model);
